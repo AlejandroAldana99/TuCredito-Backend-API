@@ -1,0 +1,11 @@
+# IDEs
+.vscode
+
+# OS
+.DS_Store
+
+# Env
+.env
+
+# Executables
+server.exe
