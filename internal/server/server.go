@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/redis/go-redis/v9"
+	"github.com/tucredito/backend-api/internal/cache"
 	"github.com/tucredito/backend-api/internal/handler"
 	"github.com/tucredito/backend-api/internal/middleware"
 	"github.com/tucredito/backend-api/internal/repository/postgres"
@@ -40,6 +42,25 @@ func New(ctx context.Context, cfg *Config) (*Server, error) {
 	// Create repositories
 	clientRepo := postgres.NewClientRepository(pool)
 
+	// Create the cache
+	var c cache.Cache
+	var redisClient *redis.Client
+	if cfg.RedisAddr != "" {
+		redisClient = redis.NewClient(&redis.Options{
+			Addr:     cfg.RedisAddr,
+			Password: cfg.RedisPass,
+			DB:       cfg.RedisDB,
+		})
+		var errCache error
+		c, errCache = cache.NewRedisCacheFromClient(redisClient)
+		if errCache != nil {
+			cfg.Log.Warn("redis unavailable, running without cache", zap.Error(errCache))
+			_ = redisClient.Close()
+			c = nil
+			redisClient = nil
+		}
+	}
+
 	// Create the services
 	clientSvc := service.NewClientService(clientRepo)
 
@@ -57,6 +78,7 @@ func New(ctx context.Context, cfg *Config) (*Server, error) {
 	// Create the middleware
 	var handler http.Handler = mux
 	handler = middleware.Logging(cfg.Log)(handler)
+	handler = middleware.RateLimit(c, 100, 60)(handler)
 
 	// Create the HTTP server
 	httpServer := &http.Server{
