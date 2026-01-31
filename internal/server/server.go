@@ -41,6 +41,7 @@ func New(ctx context.Context, cfg *Config) (*Server, error) {
 
 	// Create repositories
 	clientRepo := postgres.NewClientRepository(pool)
+	bankRepo := postgres.NewBankRepository(pool)
 
 	// Create the cache
 	var c cache.Cache
@@ -63,9 +64,11 @@ func New(ctx context.Context, cfg *Config) (*Server, error) {
 
 	// Create the services
 	clientSvc := service.NewClientService(clientRepo)
+	bankSvc := service.NewBankService(bankRepo)
 
 	// Create the handlers
 	clientH := handler.NewClientHandler(clientSvc, cfg.Log)
+	bankH := handler.NewBankHandler(bankSvc, cfg.Log)
 
 	// Initialize the HTTP server
 	mux := http.NewServeMux()
@@ -74,6 +77,11 @@ func New(ctx context.Context, cfg *Config) (*Server, error) {
 	mux.HandleFunc("POST /clients", clientH.Create)
 	mux.HandleFunc("GET /clients", clientH.List)
 	mux.HandleFunc("GET /clients/{id}", clientH.GetByID)
+
+	// Register the bank endpoints
+	mux.HandleFunc("POST /banks", bankH.Create)
+	mux.HandleFunc("GET /banks", bankH.List)
+	mux.HandleFunc("GET /banks/{id}", bankH.GetByID)
 
 	// Create the middleware
 	var handler http.Handler = mux
