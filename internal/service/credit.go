@@ -80,7 +80,7 @@ func NewCreditService(
 }
 
 // Processes credit creation jobs from the channel
-func (s *creditService) worker(id int) {
+func (s *creditService) worker(_ int) {
 	defer s.wg.Done()
 	for {
 		select {
