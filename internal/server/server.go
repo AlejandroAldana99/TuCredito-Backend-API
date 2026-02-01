@@ -96,6 +96,7 @@ func New(ctx context.Context, cfg *Config) (*Server, error) {
 	mux.HandleFunc("GET "+apiVersion+"/clients/{id}", clientH.GetByID)
 	mux.HandleFunc("PUT "+apiVersion+"/clients/{id}", clientH.Update)
 	mux.HandleFunc("DELETE "+apiVersion+"/clients/{id}", clientH.Delete)
+	mux.HandleFunc("POST "+apiVersion+"/clients/{id}/reenable", clientH.Reenable)
 	mux.HandleFunc("GET "+apiVersion+"/clients/{id}/credits", creditH.ListByClientID)
 
 	// Register the bank endpoints
@@ -104,6 +105,7 @@ func New(ctx context.Context, cfg *Config) (*Server, error) {
 	mux.HandleFunc("GET "+apiVersion+"/banks/{id}", bankH.GetByID)
 	mux.HandleFunc("PUT "+apiVersion+"/banks/{id}", bankH.Update)
 	mux.HandleFunc("DELETE "+apiVersion+"/banks/{id}", bankH.Delete)
+	mux.HandleFunc("POST "+apiVersion+"/banks/{id}/reenable", bankH.Reenable)
 
 	// Register the credit endpoints
 	mux.HandleFunc("POST "+apiVersion+"/credits", creditH.Create)
@@ -111,6 +113,7 @@ func New(ctx context.Context, cfg *Config) (*Server, error) {
 	mux.HandleFunc("GET "+apiVersion+"/credits/{id}", creditH.GetByID)
 	mux.HandleFunc("PUT "+apiVersion+"/credits/{id}", creditH.Update)
 	mux.HandleFunc("DELETE "+apiVersion+"/credits/{id}", creditH.Delete)
+	mux.HandleFunc("POST "+apiVersion+"/credits/{id}/reenable", creditH.Reenable)
 
 	// Create the middleware
 	var handler http.Handler = mux

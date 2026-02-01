@@ -37,6 +37,11 @@ func (s *clientService) Delete(ctx context.Context, id string) (*domain.Client, 
 	return s.repository.SetInactive(ctx, id)
 }
 
+// Re-enables a client
+func (s *clientService) Reenable(ctx context.Context, id string) (*domain.Client, error) {
+	return s.repository.SetActive(ctx, id)
+}
+
 // Lists clients with pagination
 func (s *clientService) List(ctx context.Context, limit, offset int) ([]*domain.Client, error) {
 	return s.repository.List(ctx, limit, offset)

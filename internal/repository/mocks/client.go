@@ -16,6 +16,7 @@ type ClientRepository struct {
 	GetByIDFunc     func(ctx context.Context, id string) (*domain.Client, error)
 	UpdateFunc      func(ctx context.Context, id string, input domain.UpdateClientInput) (*domain.Client, error)
 	SetInactiveFunc func(ctx context.Context, id string) (*domain.Client, error)
+	SetActiveFunc   func(ctx context.Context, id string) (*domain.Client, error)
 	ListFunc        func(ctx context.Context, limit, offset int) ([]*domain.Client, error)
 }
 
@@ -43,6 +44,13 @@ func (m *ClientRepository) Update(ctx context.Context, id string, input domain.U
 func (m *ClientRepository) SetInactive(ctx context.Context, id string) (*domain.Client, error) {
 	if m.SetInactiveFunc != nil {
 		return m.SetInactiveFunc(ctx, id)
+	}
+	return nil, nil
+}
+
+func (m *ClientRepository) SetActive(ctx context.Context, id string) (*domain.Client, error) {
+	if m.SetActiveFunc != nil {
+		return m.SetActiveFunc(ctx, id)
 	}
 	return nil, nil
 }

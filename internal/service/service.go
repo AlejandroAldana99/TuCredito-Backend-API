@@ -12,6 +12,7 @@ type ClientService interface {
 	GetByID(ctx context.Context, id string) (*domain.Client, error)
 	Update(ctx context.Context, id string, input domain.UpdateClientInput) (*domain.Client, error)
 	Delete(ctx context.Context, id string) (*domain.Client, error)
+	Reenable(ctx context.Context, id string) (*domain.Client, error)
 	List(ctx context.Context, limit, offset int) ([]*domain.Client, error)
 }
 
@@ -21,6 +22,7 @@ type BankService interface {
 	GetByID(ctx context.Context, id string) (*domain.Bank, error)
 	Update(ctx context.Context, id string, input domain.UpdateBankInput) (*domain.Bank, error)
 	Delete(ctx context.Context, id string) (*domain.Bank, error)
+	Reenable(ctx context.Context, id string) (*domain.Bank, error)
 	List(ctx context.Context, limit, offset int) ([]*domain.Bank, error)
 }
 
@@ -32,6 +34,7 @@ type CreditService interface {
 	Update(ctx context.Context, id string, input domain.UpdateCreditInput) (*domain.Credit, error)
 	UpdateStatus(ctx context.Context, id string, status domain.CreditStatus) (*domain.Credit, error)
 	Delete(ctx context.Context, id string) (*domain.Credit, error)
+	Reenable(ctx context.Context, id string) (*domain.Credit, error)
 	List(ctx context.Context, limit, offset int) ([]*domain.Credit, error)
 	ListByClientID(ctx context.Context, clientID string, limit, offset int) ([]*domain.Credit, error)
 	Shutdown()

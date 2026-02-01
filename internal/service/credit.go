@@ -264,6 +264,18 @@ func (s *creditService) Delete(ctx context.Context, id string) (*domain.Credit, 
 	return credit, nil
 }
 
+// Re-enables a credit
+func (s *creditService) Reenable(ctx context.Context, id string) (*domain.Credit, error) {
+	credit, err := s.creditRepo.SetActive(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	if credit != nil && s.cache != nil {
+		_ = s.cache.Delete(ctx, creditCacheKeyPrefix+id)
+	}
+	return credit, nil
+}
+
 // Lists credits with pagination
 func (s *creditService) List(ctx context.Context, limit, offset int) ([]*domain.Credit, error) {
 	return s.creditRepo.List(ctx, limit, offset)

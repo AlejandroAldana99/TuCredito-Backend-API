@@ -108,6 +108,30 @@ func (h *BankHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	httputil.JSON(w, http.StatusOK, bank)
 }
 
+// Re-enables a bank (POST /banks/{id}/reenable).
+func (h *BankHandler) Reenable(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		httputil.Error(w, http.StatusMethodNotAllowed, "method not allowed", "METHOD_NOT_ALLOWED", "")
+		return
+	}
+	id := r.PathValue("id")
+	if id == "" {
+		httputil.Error(w, http.StatusBadRequest, "id required", "VALIDATION", "")
+		return
+	}
+	bank, err := h.service.Reenable(r.Context(), id)
+	if err != nil {
+		h.log.Error("reenable bank", zap.Error(err), zap.String("id", id))
+		httputil.Error(w, http.StatusInternalServerError, "failed to reenable bank", "INTERNAL", err.Error())
+		return
+	}
+	if bank == nil {
+		httputil.Error(w, http.StatusNotFound, "bank not found", "NOT_FOUND", "")
+		return
+	}
+	httputil.JSON(w, http.StatusOK, bank)
+}
+
 // Gets a bank by ID (GET /banks/{id}).
 func (h *BankHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {

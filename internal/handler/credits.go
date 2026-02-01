@@ -154,6 +154,30 @@ func (h *CreditHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	httputil.JSON(w, http.StatusOK, credit)
 }
 
+// Re-enables a credit (POST /credits/{id}/reenable).
+func (h *CreditHandler) Reenable(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		httputil.Error(w, http.StatusMethodNotAllowed, "method not allowed", "METHOD_NOT_ALLOWED", "")
+		return
+	}
+	id := r.PathValue("id")
+	if id == "" {
+		httputil.Error(w, http.StatusBadRequest, "id required", "VALIDATION", "")
+		return
+	}
+	credit, err := h.service.Reenable(r.Context(), id)
+	if err != nil {
+		h.log.Error("reenable credit", zap.Error(err), zap.String("id", id))
+		httputil.Error(w, http.StatusInternalServerError, "failed to reenable credit", "INTERNAL", err.Error())
+		return
+	}
+	if credit == nil {
+		httputil.Error(w, http.StatusNotFound, "credit not found", "NOT_FOUND", "")
+		return
+	}
+	httputil.JSON(w, http.StatusOK, credit)
+}
+
 // Lists credits with pagination (GET /credits).
 func (h *CreditHandler) List(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {

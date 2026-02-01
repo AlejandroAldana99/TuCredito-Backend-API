@@ -8,11 +8,12 @@ import (
 )
 
 type MockClientService struct {
-	CreateFunc  func(ctx context.Context, input domain.CreateClientInput) (*domain.Client, error)
-	GetByIDFunc func(ctx context.Context, id string) (*domain.Client, error)
-	UpdateFunc  func(ctx context.Context, id string, input domain.UpdateClientInput) (*domain.Client, error)
-	DeleteFunc  func(ctx context.Context, id string) (*domain.Client, error)
-	ListFunc    func(ctx context.Context, limit, offset int) ([]*domain.Client, error)
+	CreateFunc    func(ctx context.Context, input domain.CreateClientInput) (*domain.Client, error)
+	GetByIDFunc   func(ctx context.Context, id string) (*domain.Client, error)
+	UpdateFunc    func(ctx context.Context, id string, input domain.UpdateClientInput) (*domain.Client, error)
+	DeleteFunc    func(ctx context.Context, id string) (*domain.Client, error)
+	ReenableFunc   func(ctx context.Context, id string) (*domain.Client, error)
+	ListFunc      func(ctx context.Context, limit, offset int) ([]*domain.Client, error)
 }
 
 func (m *MockClientService) Create(ctx context.Context, input domain.CreateClientInput) (*domain.Client, error) {
@@ -43,6 +44,13 @@ func (m *MockClientService) Delete(ctx context.Context, id string) (*domain.Clie
 	return nil, nil
 }
 
+func (m *MockClientService) Reenable(ctx context.Context, id string) (*domain.Client, error) {
+	if m.ReenableFunc != nil {
+		return m.ReenableFunc(ctx, id)
+	}
+	return nil, nil
+}
+
 func (m *MockClientService) List(ctx context.Context, limit, offset int) ([]*domain.Client, error) {
 	if m.ListFunc != nil {
 		return m.ListFunc(ctx, limit, offset)
@@ -53,11 +61,12 @@ func (m *MockClientService) List(ctx context.Context, limit, offset int) ([]*dom
 var _ service.ClientService = (*MockClientService)(nil)
 
 type MockBankService struct {
-	CreateFunc  func(ctx context.Context, input domain.CreateBankInput) (*domain.Bank, error)
-	GetByIDFunc func(ctx context.Context, id string) (*domain.Bank, error)
-	UpdateFunc  func(ctx context.Context, id string, input domain.UpdateBankInput) (*domain.Bank, error)
-	DeleteFunc  func(ctx context.Context, id string) (*domain.Bank, error)
-	ListFunc    func(ctx context.Context, limit, offset int) ([]*domain.Bank, error)
+	CreateFunc   func(ctx context.Context, input domain.CreateBankInput) (*domain.Bank, error)
+	GetByIDFunc  func(ctx context.Context, id string) (*domain.Bank, error)
+	UpdateFunc   func(ctx context.Context, id string, input domain.UpdateBankInput) (*domain.Bank, error)
+	DeleteFunc   func(ctx context.Context, id string) (*domain.Bank, error)
+	ReenableFunc func(ctx context.Context, id string) (*domain.Bank, error)
+	ListFunc     func(ctx context.Context, limit, offset int) ([]*domain.Bank, error)
 }
 
 func (m *MockBankService) Create(ctx context.Context, input domain.CreateBankInput) (*domain.Bank, error) {
@@ -88,6 +97,13 @@ func (m *MockBankService) Delete(ctx context.Context, id string) (*domain.Bank, 
 	return nil, nil
 }
 
+func (m *MockBankService) Reenable(ctx context.Context, id string) (*domain.Bank, error) {
+	if m.ReenableFunc != nil {
+		return m.ReenableFunc(ctx, id)
+	}
+	return nil, nil
+}
+
 func (m *MockBankService) List(ctx context.Context, limit, offset int) ([]*domain.Bank, error) {
 	if m.ListFunc != nil {
 		return m.ListFunc(ctx, limit, offset)
@@ -104,6 +120,7 @@ type MockCreditService struct {
 	UpdateFunc         func(ctx context.Context, id string, input domain.UpdateCreditInput) (*domain.Credit, error)
 	UpdateStatusFunc   func(ctx context.Context, id string, status domain.CreditStatus) (*domain.Credit, error)
 	DeleteFunc         func(ctx context.Context, id string) (*domain.Credit, error)
+	ReenableFunc       func(ctx context.Context, id string) (*domain.Credit, error)
 	ListFunc           func(ctx context.Context, limit, offset int) ([]*domain.Credit, error)
 	ListByClientIDFunc func(ctx context.Context, clientID string, limit, offset int) ([]*domain.Credit, error)
 }
@@ -146,6 +163,13 @@ func (m *MockCreditService) UpdateStatus(ctx context.Context, id string, status 
 func (m *MockCreditService) Delete(ctx context.Context, id string) (*domain.Credit, error) {
 	if m.DeleteFunc != nil {
 		return m.DeleteFunc(ctx, id)
+	}
+	return nil, nil
+}
+
+func (m *MockCreditService) Reenable(ctx context.Context, id string) (*domain.Credit, error) {
+	if m.ReenableFunc != nil {
+		return m.ReenableFunc(ctx, id)
 	}
 	return nil, nil
 }

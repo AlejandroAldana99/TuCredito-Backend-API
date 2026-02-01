@@ -17,6 +17,7 @@ type CreditRepository struct {
 	UpdateFunc         func(ctx context.Context, id string, input domain.UpdateCreditInput) (*domain.Credit, error)
 	UpdateStatusFunc   func(ctx context.Context, id string, status domain.CreditStatus) (*domain.Credit, error)
 	SetInactiveFunc    func(ctx context.Context, id string) (*domain.Credit, error)
+	SetActiveFunc      func(ctx context.Context, id string) (*domain.Credit, error)
 	ListFunc           func(ctx context.Context, limit, offset int) ([]*domain.Credit, error)
 	ListByClientIDFunc func(ctx context.Context, clientID string, limit, offset int) ([]*domain.Credit, error)
 }
@@ -52,6 +53,13 @@ func (m *CreditRepository) UpdateStatus(ctx context.Context, id string, status d
 func (m *CreditRepository) SetInactive(ctx context.Context, id string) (*domain.Credit, error) {
 	if m.SetInactiveFunc != nil {
 		return m.SetInactiveFunc(ctx, id)
+	}
+	return nil, nil
+}
+
+func (m *CreditRepository) SetActive(ctx context.Context, id string) (*domain.Credit, error) {
+	if m.SetActiveFunc != nil {
+		return m.SetActiveFunc(ctx, id)
 	}
 	return nil, nil
 }

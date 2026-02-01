@@ -116,6 +116,27 @@ func (r *CreditRepository) SetInactive(ctx context.Context, id string) (*domain.
 	return &c, nil
 }
 
+// Re-enables a credit
+func (r *CreditRepository) SetActive(ctx context.Context, id string) (*domain.Credit, error) {
+	query := `
+		UPDATE credits SET is_active = TRUE, updated_at = NOW()
+		WHERE id = $1
+		RETURNING id, client_id, bank_id, min_payment, max_payment, term_months, credit_type, status, created_at, is_active
+	`
+	var c domain.Credit
+	err := r.pool.QueryRow(ctx, query, id).Scan(
+		&c.ID, &c.ClientID, &c.BankID, &c.MinPayment, &c.MaxPayment,
+		&c.TermMonths, &c.CreditType, &c.Status, &c.CreatedAt, &c.IsActive,
+	)
+	if err != nil {
+		if isNotFound(err) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &c, nil
+}
+
 // Lists credits with pagination
 func (r *CreditRepository) List(ctx context.Context, limit, offset int) ([]*domain.Credit, error) {
 	if limit <= 0 {

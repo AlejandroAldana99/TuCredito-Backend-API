@@ -16,6 +16,7 @@ type BankRepository struct {
 	GetByIDFunc     func(ctx context.Context, id string) (*domain.Bank, error)
 	UpdateFunc      func(ctx context.Context, id string, input domain.UpdateBankInput) (*domain.Bank, error)
 	SetInactiveFunc func(ctx context.Context, id string) (*domain.Bank, error)
+	SetActiveFunc   func(ctx context.Context, id string) (*domain.Bank, error)
 	ListFunc        func(ctx context.Context, limit, offset int) ([]*domain.Bank, error)
 }
 
@@ -43,6 +44,13 @@ func (m *BankRepository) Update(ctx context.Context, id string, input domain.Upd
 func (m *BankRepository) SetInactive(ctx context.Context, id string) (*domain.Bank, error) {
 	if m.SetInactiveFunc != nil {
 		return m.SetInactiveFunc(ctx, id)
+	}
+	return nil, nil
+}
+
+func (m *BankRepository) SetActive(ctx context.Context, id string) (*domain.Bank, error) {
+	if m.SetActiveFunc != nil {
+		return m.SetActiveFunc(ctx, id)
 	}
 	return nil, nil
 }

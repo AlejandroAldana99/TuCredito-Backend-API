@@ -41,7 +41,7 @@ func (r *ClientRepository) Create(ctx context.Context, client domain.CreateClien
 // Gets a client by ID
 func (r *ClientRepository) GetByID(ctx context.Context, id string) (*domain.Client, error) {
 	var c domain.Client
-	query := `SELECT id, full_name, email, birth_date, country, created_at, is_active FROM clients WHERE id = $1`
+	query := `SELECT id, full_name, email, birth_date, country, created_at, is_active FROM clients WHERE id = $1 AND is_active = TRUE`
 	err := r.pool.QueryRow(ctx, query, id).Scan(
 		&c.ID, &c.FullName, &c.Email, &c.BirthDate, &c.Country, &c.CreatedAt, &c.IsActive,
 	)
@@ -78,6 +78,25 @@ func (r *ClientRepository) Update(ctx context.Context, id string, input domain.U
 func (r *ClientRepository) SetInactive(ctx context.Context, id string) (*domain.Client, error) {
 	query := `
 		UPDATE clients SET is_active = FALSE WHERE id = $1
+		RETURNING id, full_name, email, birth_date, country, created_at, is_active
+	`
+	var c domain.Client
+	err := r.pool.QueryRow(ctx, query, id).Scan(
+		&c.ID, &c.FullName, &c.Email, &c.BirthDate, &c.Country, &c.CreatedAt, &c.IsActive,
+	)
+	if err != nil {
+		if isNotFound(err) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &c, nil
+}
+
+// Re-enables a client
+func (r *ClientRepository) SetActive(ctx context.Context, id string) (*domain.Client, error) {
+	query := `
+		UPDATE clients SET is_active = TRUE WHERE id = $1
 		RETURNING id, full_name, email, birth_date, country, created_at, is_active
 	`
 	var c domain.Client

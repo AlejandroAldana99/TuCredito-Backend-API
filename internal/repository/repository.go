@@ -12,6 +12,7 @@ type ClientRepository interface {
 	GetByID(ctx context.Context, id string) (*domain.Client, error)
 	Update(ctx context.Context, id string, input domain.UpdateClientInput) (*domain.Client, error)
 	SetInactive(ctx context.Context, id string) (*domain.Client, error)
+	SetActive(ctx context.Context, id string) (*domain.Client, error)
 	List(ctx context.Context, limit, offset int) ([]*domain.Client, error)
 }
 
@@ -21,6 +22,7 @@ type BankRepository interface {
 	GetByID(ctx context.Context, id string) (*domain.Bank, error)
 	Update(ctx context.Context, id string, input domain.UpdateBankInput) (*domain.Bank, error)
 	SetInactive(ctx context.Context, id string) (*domain.Bank, error)
+	SetActive(ctx context.Context, id string) (*domain.Bank, error)
 	List(ctx context.Context, limit, offset int) ([]*domain.Bank, error)
 }
 
@@ -31,6 +33,7 @@ type CreditRepository interface {
 	Update(ctx context.Context, id string, input domain.UpdateCreditInput) (*domain.Credit, error)
 	UpdateStatus(ctx context.Context, id string, status domain.CreditStatus) (*domain.Credit, error)
 	SetInactive(ctx context.Context, id string) (*domain.Credit, error)
+	SetActive(ctx context.Context, id string) (*domain.Credit, error)
 	List(ctx context.Context, limit, offset int) ([]*domain.Credit, error)
 	ListByClientID(ctx context.Context, clientID string, limit, offset int) ([]*domain.Credit, error)
 }

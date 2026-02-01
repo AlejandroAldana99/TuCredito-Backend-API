@@ -108,6 +108,30 @@ func (h *ClientHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	httputil.JSON(w, http.StatusOK, client)
 }
 
+// Re-enables a client (POST /clients/{id}/reenable).
+func (h *ClientHandler) Reenable(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		httputil.Error(w, http.StatusMethodNotAllowed, "method not allowed", "METHOD_NOT_ALLOWED", "")
+		return
+	}
+	id := r.PathValue("id")
+	if id == "" {
+		httputil.Error(w, http.StatusBadRequest, "id required", "VALIDATION", "")
+		return
+	}
+	client, err := h.service.Reenable(r.Context(), id)
+	if err != nil {
+		h.log.Error("reenable client", zap.Error(err), zap.String("id", id))
+		httputil.Error(w, http.StatusInternalServerError, "failed to reenable client", "INTERNAL", err.Error())
+		return
+	}
+	if client == nil {
+		httputil.Error(w, http.StatusNotFound, "client not found", "NOT_FOUND", "")
+		return
+	}
+	httputil.JSON(w, http.StatusOK, client)
+}
+
 // Gets a client by ID (GET /clients/{id}).
 func (h *ClientHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {

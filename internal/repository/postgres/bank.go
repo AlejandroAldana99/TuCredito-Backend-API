@@ -36,7 +36,7 @@ func (r *BankRepository) Create(ctx context.Context, input domain.CreateBankInpu
 
 // Gets a bank by ID
 func (r *BankRepository) GetByID(ctx context.Context, id string) (*domain.Bank, error) {
-	query := `SELECT id, name, type, is_active FROM banks WHERE id = $1`
+	query := `SELECT id, name, type, is_active FROM banks WHERE id = $1 AND is_active = TRUE`
 	var b domain.Bank
 	err := r.pool.QueryRow(ctx, query, id).Scan(&b.ID, &b.Name, &b.Type, &b.IsActive)
 	if err != nil {
@@ -65,6 +65,20 @@ func (r *BankRepository) Update(ctx context.Context, id string, input domain.Upd
 // Soft-deletes a bank
 func (r *BankRepository) SetInactive(ctx context.Context, id string) (*domain.Bank, error) {
 	query := `UPDATE banks SET is_active = FALSE WHERE id = $1 RETURNING id, name, type, is_active`
+	var b domain.Bank
+	err := r.pool.QueryRow(ctx, query, id).Scan(&b.ID, &b.Name, &b.Type, &b.IsActive)
+	if err != nil {
+		if isNotFound(err) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &b, nil
+}
+
+// Re-enables a bank
+func (r *BankRepository) SetActive(ctx context.Context, id string) (*domain.Bank, error) {
+	query := `UPDATE banks SET is_active = TRUE WHERE id = $1 RETURNING id, name, type, is_active`
 	var b domain.Bank
 	err := r.pool.QueryRow(ctx, query, id).Scan(&b.ID, &b.Name, &b.Type, &b.IsActive)
 	if err != nil {

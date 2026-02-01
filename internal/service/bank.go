@@ -37,6 +37,11 @@ func (s *bankService) Delete(ctx context.Context, id string) (*domain.Bank, erro
 	return s.repository.SetInactive(ctx, id)
 }
 
+// Re-enables a bank
+func (s *bankService) Reenable(ctx context.Context, id string) (*domain.Bank, error) {
+	return s.repository.SetActive(ctx, id)
+}
+
 // Lists banks with pagination
 func (s *bankService) List(ctx context.Context, limit, offset int) ([]*domain.Bank, error) {
 	return s.repository.List(ctx, limit, offset)
