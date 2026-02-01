@@ -23,7 +23,7 @@ func NewClientHandler(service service.ClientService, log *zap.Logger) *ClientHan
 	}
 }
 
-// Create creates a client (POST /clients).
+// Creates a client (POST /clients).
 func (h *ClientHandler) Create(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		httputil.Error(w, http.StatusMethodNotAllowed, "method not allowed", "METHOD_NOT_ALLOWED", "")
@@ -51,7 +51,64 @@ func (h *ClientHandler) Create(w http.ResponseWriter, r *http.Request) {
 	httputil.JSON(w, http.StatusCreated, client)
 }
 
-// GetByID gets a client by ID (GET /clients/:id).
+// Updates a client (PUT /clients/{id}).
+func (h *ClientHandler) Update(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPut {
+		httputil.Error(w, http.StatusMethodNotAllowed, "method not allowed", "METHOD_NOT_ALLOWED", "")
+		return
+	}
+	id := r.PathValue("id")
+	if id == "" {
+		httputil.Error(w, http.StatusBadRequest, "id required", "VALIDATION", "")
+		return
+	}
+	var input domain.UpdateClientInput
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		httputil.Error(w, http.StatusBadRequest, "invalid JSON", "INVALID_JSON", err.Error())
+		return
+	}
+	if input.FullName == "" || input.Email == "" || input.Country == "" {
+		httputil.Error(w, http.StatusBadRequest, "full_name, email, country required", "VALIDATION", "")
+		return
+	}
+	client, err := h.service.Update(r.Context(), id, input)
+	if err != nil {
+		h.log.Error("update client", zap.Error(err), zap.String("id", id))
+		httputil.Error(w, http.StatusInternalServerError, "failed to update client", "INTERNAL", err.Error())
+		return
+	}
+	if client == nil {
+		httputil.Error(w, http.StatusNotFound, "client not found", "NOT_FOUND", "")
+		return
+	}
+	httputil.JSON(w, http.StatusOK, client)
+}
+
+// Soft-deletes a client (DELETE /clients/{id}).
+func (h *ClientHandler) Delete(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodDelete {
+		httputil.Error(w, http.StatusMethodNotAllowed, "method not allowed", "METHOD_NOT_ALLOWED", "")
+		return
+	}
+	id := r.PathValue("id")
+	if id == "" {
+		httputil.Error(w, http.StatusBadRequest, "id required", "VALIDATION", "")
+		return
+	}
+	client, err := h.service.Delete(r.Context(), id)
+	if err != nil {
+		h.log.Error("delete client", zap.Error(err), zap.String("id", id))
+		httputil.Error(w, http.StatusInternalServerError, "failed to delete client", "INTERNAL", err.Error())
+		return
+	}
+	if client == nil {
+		httputil.Error(w, http.StatusNotFound, "client not found", "NOT_FOUND", "")
+		return
+	}
+	httputil.JSON(w, http.StatusOK, client)
+}
+
+// Gets a client by ID (GET /clients/{id}).
 func (h *ClientHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		httputil.Error(w, http.StatusMethodNotAllowed, "method not allowed", "METHOD_NOT_ALLOWED", "")

@@ -8,15 +8,22 @@ const (
 	BankTypeGovernment BankType = "GOVERNMENT"
 )
 
-// Internal back structure
+// Bank structure
 type Bank struct {
-	ID   string   `json:"id"`
+	ID       string   `json:"id"`
+	Name     string   `json:"name"`
+	Type     BankType `json:"type"`
+	IsActive bool     `json:"is_active"`
+}
+
+// Structure for creating a bank
+type CreateBankInput struct {
 	Name string   `json:"name"`
 	Type BankType `json:"type"`
 }
 
-// Input data required to create a bank
-type CreateBankInput struct {
+// Structure for updating a bank
+type UpdateBankInput struct {
 	Name string   `json:"name"`
 	Type BankType `json:"type"`
 }

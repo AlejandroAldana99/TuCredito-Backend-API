@@ -79,7 +79,7 @@ func NewCreditService(
 	return s
 }
 
-// worker processes credit creation jobs from the channel
+// Processes credit creation jobs from the channel
 func (s *creditService) worker(id int) {
 	defer s.wg.Done()
 	for {
@@ -93,7 +93,7 @@ func (s *creditService) worker(id int) {
 	}
 }
 
-// Create enqueues credit creation and returns the result
+// Creates a credit
 func (s *creditService) Create(ctx context.Context, input domain.CreateCreditInput) (*domain.Credit, error) {
 	if input.ClientID == "" || input.BankID == "" || input.MaxPayment < input.MinPayment || input.TermMonths <= 0 {
 		return nil, ErrInvalidInput
@@ -186,7 +186,7 @@ func (s *creditService) cacheCredit(ctx context.Context, c *domain.Credit) {
 	}
 }
 
-// Gets a credit by ID, checking cache first
+// Gets a credit by ID
 func (s *creditService) GetByID(ctx context.Context, id string) (*domain.Credit, error) {
 	if s.cache != nil {
 		if cacheWithJSON, ok := s.cache.(interface {
@@ -202,7 +202,30 @@ func (s *creditService) GetByID(ctx context.Context, id string) (*domain.Credit,
 	return s.creditRepo.GetByID(ctx, id)
 }
 
-// Updates credit status and emits domain events
+// Updates a credit
+func (s *creditService) Update(ctx context.Context, id string, input domain.UpdateCreditInput) (*domain.Credit, error) {
+	credit, err := s.creditRepo.Update(ctx, id, input)
+	if err != nil {
+		return nil, err
+	}
+	if credit == nil {
+		return nil, nil
+	}
+	if s.cache != nil {
+		_ = s.cache.Delete(ctx, creditCacheKeyPrefix+id)
+	}
+	switch input.Status {
+	case domain.CreditStatusApproved:
+		metrics.IncCreditsApproved()
+		_ = s.emitCreditApproved(ctx, credit)
+	case domain.CreditStatusRejected:
+		metrics.IncCreditsRejected()
+		_ = s.emitCreditRejected(ctx, credit)
+	}
+	return credit, nil
+}
+
+// Updates a credit status
 func (s *creditService) UpdateStatus(ctx context.Context, id string, status domain.CreditStatus) (*domain.Credit, error) {
 	credit, err := s.creditRepo.UpdateStatus(ctx, id, status)
 	if err != nil {
@@ -229,12 +252,24 @@ func (s *creditService) UpdateStatus(ctx context.Context, id string, status doma
 	return credit, nil
 }
 
+// Soft-deletes a credit
+func (s *creditService) Delete(ctx context.Context, id string) (*domain.Credit, error) {
+	credit, err := s.creditRepo.SetInactive(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	if credit != nil && s.cache != nil {
+		_ = s.cache.Delete(ctx, creditCacheKeyPrefix+id)
+	}
+	return credit, nil
+}
+
 // Lists credits with pagination
 func (s *creditService) List(ctx context.Context, limit, offset int) ([]*domain.Credit, error) {
 	return s.creditRepo.List(ctx, limit, offset)
 }
 
-// Lists credits for a client
+// Lists credits for a client with pagination
 func (s *creditService) ListByClientID(ctx context.Context, clientID string, limit, offset int) ([]*domain.Credit, error) {
 	return s.creditRepo.ListByClientID(ctx, clientID, limit, offset)
 }

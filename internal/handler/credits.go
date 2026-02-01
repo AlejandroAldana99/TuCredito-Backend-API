@@ -23,7 +23,7 @@ func NewCreditHandler(service service.CreditService, log *zap.Logger) *CreditHan
 	}
 }
 
-// Create creates a credit (POST /credits) - uses worker pool for concurrent processing
+// Creates a credit (POST /credits) - uses worker pool for concurrent processing
 func (h *CreditHandler) Create(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		httputil.Error(w, http.StatusMethodNotAllowed, "method not allowed", "METHOD_NOT_ALLOWED", "")
@@ -65,7 +65,7 @@ func (h *CreditHandler) Create(w http.ResponseWriter, r *http.Request) {
 	httputil.JSON(w, http.StatusCreated, credit)
 }
 
-// Returns a credit by ID (GET /credits/:id)
+// Gets a credit by ID (GET /credits/{id}).
 func (h *CreditHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		httputil.Error(w, http.StatusMethodNotAllowed, "method not allowed", "METHOD_NOT_ALLOWED", "")
@@ -93,42 +93,64 @@ func (h *CreditHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	httputil.JSON(w, http.StatusOK, credit)
 }
 
-// Updates credit status (PATCH /credits/:id/status)
-func (h *CreditHandler) UpdateStatus(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPatch && r.Method != http.MethodPut {
+// Updates a credit (PUT /credits/{id}).
+func (h *CreditHandler) Update(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPut {
 		httputil.Error(w, http.StatusMethodNotAllowed, "method not allowed", "METHOD_NOT_ALLOWED", "")
 		return
 	}
-
 	id := r.PathValue("id")
 	if id == "" {
 		httputil.Error(w, http.StatusBadRequest, "id required", "VALIDATION", "")
 		return
 	}
-
-	var body domain.UpdateCreditStatusInput
-	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+	var input domain.UpdateCreditInput
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
 		httputil.Error(w, http.StatusBadRequest, "invalid JSON", "INVALID_JSON", err.Error())
 		return
 	}
-
-	if body.Status != domain.CreditStatusApproved && body.Status != domain.CreditStatusRejected && body.Status != domain.CreditStatusPending {
+	if input.MaxPayment < input.MinPayment || input.TermMonths <= 0 {
+		httputil.Error(w, http.StatusBadRequest, "min_payment, max_payment, term_months required and valid", "VALIDATION", "")
+		return
+	}
+	if input.Status != domain.CreditStatusPending && input.Status != domain.CreditStatusApproved && input.Status != domain.CreditStatusRejected {
 		httputil.Error(w, http.StatusBadRequest, "status must be PENDING, APPROVED, or REJECTED", "VALIDATION", "")
 		return
 	}
-
-	credit, err := h.service.UpdateStatus(r.Context(), id, body.Status)
+	credit, err := h.service.Update(r.Context(), id, input)
 	if err != nil {
-		h.log.Error("update credit status", zap.Error(err), zap.String("id", id))
-		httputil.Error(w, http.StatusInternalServerError, "failed to update status", "INTERNAL", err.Error())
+		h.log.Error("update credit", zap.Error(err), zap.String("id", id))
+		httputil.Error(w, http.StatusInternalServerError, "failed to update credit", "INTERNAL", err.Error())
 		return
 	}
-
 	if credit == nil {
 		httputil.Error(w, http.StatusNotFound, "credit not found", "NOT_FOUND", "")
 		return
 	}
+	httputil.JSON(w, http.StatusOK, credit)
+}
 
+// Soft-deletes a credit (DELETE /credits/{id}).
+func (h *CreditHandler) Delete(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodDelete {
+		httputil.Error(w, http.StatusMethodNotAllowed, "method not allowed", "METHOD_NOT_ALLOWED", "")
+		return
+	}
+	id := r.PathValue("id")
+	if id == "" {
+		httputil.Error(w, http.StatusBadRequest, "id required", "VALIDATION", "")
+		return
+	}
+	credit, err := h.service.Delete(r.Context(), id)
+	if err != nil {
+		h.log.Error("delete credit", zap.Error(err), zap.String("id", id))
+		httputil.Error(w, http.StatusInternalServerError, "failed to delete credit", "INTERNAL", err.Error())
+		return
+	}
+	if credit == nil {
+		httputil.Error(w, http.StatusNotFound, "credit not found", "NOT_FOUND", "")
+		return
+	}
 	httputil.JSON(w, http.StatusOK, credit)
 }
 
@@ -155,7 +177,7 @@ func (h *CreditHandler) List(w http.ResponseWriter, r *http.Request) {
 	httputil.JSON(w, http.StatusOK, list)
 }
 
-// Lists credits for a client (GET /clients/:id/credits).
+// Lists credits for a client (GET /clients/{id}/credits).
 func (h *CreditHandler) ListByClientID(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		httputil.Error(w, http.StatusMethodNotAllowed, "method not allowed", "METHOD_NOT_ALLOWED", "")

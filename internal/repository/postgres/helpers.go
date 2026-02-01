@@ -9,7 +9,7 @@ import (
 	"github.com/tucredito/backend-api/internal/domain"
 )
 
-// Creates a PostgreSQL connection pool from connString.
+// Creates a PostgreSQL connection pool
 func NewPool(ctx context.Context, connString string) (*pgxpool.Pool, error) {
 	config, err := pgxpool.ParseConfig(connString)
 	if err != nil {
@@ -18,19 +18,19 @@ func NewPool(ctx context.Context, connString string) (*pgxpool.Pool, error) {
 	return pgxpool.NewWithConfig(ctx, config)
 }
 
-// Checks if the error is "no rows".
+// Checks if the error is "no rows"
 func isNotFound(err error) bool {
 	return errors.Is(err, pgx.ErrNoRows)
 }
 
-// scanCredits scans credit rows into a slice. Caller must close rows.
+// scanCredits scans credit rows into a slice
 func scanCredits(rows pgx.Rows) ([]*domain.Credit, error) {
 	var list []*domain.Credit
 	for rows.Next() {
 		var c domain.Credit
 		if err := rows.Scan(
 			&c.ID, &c.ClientID, &c.BankID, &c.MinPayment, &c.MaxPayment,
-			&c.TermMonths, &c.CreditType, &c.Status, &c.CreatedAt,
+			&c.TermMonths, &c.CreditType, &c.Status, &c.CreatedAt, &c.IsActive,
 		); err != nil {
 			return nil, err
 		}

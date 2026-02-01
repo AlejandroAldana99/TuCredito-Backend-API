@@ -23,7 +23,7 @@ func NewBankHandler(service service.BankService, log *zap.Logger) *BankHandler {
 	}
 }
 
-// Create creates a bank (POST /banks).
+// Creates a bank (POST /banks).
 func (h *BankHandler) Create(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		httputil.Error(w, http.StatusMethodNotAllowed, "method not allowed", "METHOD_NOT_ALLOWED", "")
@@ -51,7 +51,64 @@ func (h *BankHandler) Create(w http.ResponseWriter, r *http.Request) {
 	httputil.JSON(w, http.StatusCreated, bank)
 }
 
-// GetByID gets a bank by ID (GET /banks/:id).
+// Updates a bank (PUT /banks/{id}).
+func (h *BankHandler) Update(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPut {
+		httputil.Error(w, http.StatusMethodNotAllowed, "method not allowed", "METHOD_NOT_ALLOWED", "")
+		return
+	}
+	id := r.PathValue("id")
+	if id == "" {
+		httputil.Error(w, http.StatusBadRequest, "id required", "VALIDATION", "")
+		return
+	}
+	var input domain.UpdateBankInput
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		httputil.Error(w, http.StatusBadRequest, "invalid JSON", "INVALID_JSON", err.Error())
+		return
+	}
+	if input.Name == "" || (input.Type != domain.BankTypePrivate && input.Type != domain.BankTypeGovernment) {
+		httputil.Error(w, http.StatusBadRequest, "name and type (PRIVATE|GOVERNMENT) required", "VALIDATION", "")
+		return
+	}
+	bank, err := h.service.Update(r.Context(), id, input)
+	if err != nil {
+		h.log.Error("update bank", zap.Error(err), zap.String("id", id))
+		httputil.Error(w, http.StatusInternalServerError, "failed to update bank", "INTERNAL", err.Error())
+		return
+	}
+	if bank == nil {
+		httputil.Error(w, http.StatusNotFound, "bank not found", "NOT_FOUND", "")
+		return
+	}
+	httputil.JSON(w, http.StatusOK, bank)
+}
+
+// Soft-deletes a bank (DELETE /banks/{id}).
+func (h *BankHandler) Delete(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodDelete {
+		httputil.Error(w, http.StatusMethodNotAllowed, "method not allowed", "METHOD_NOT_ALLOWED", "")
+		return
+	}
+	id := r.PathValue("id")
+	if id == "" {
+		httputil.Error(w, http.StatusBadRequest, "id required", "VALIDATION", "")
+		return
+	}
+	bank, err := h.service.Delete(r.Context(), id)
+	if err != nil {
+		h.log.Error("delete bank", zap.Error(err), zap.String("id", id))
+		httputil.Error(w, http.StatusInternalServerError, "failed to delete bank", "INTERNAL", err.Error())
+		return
+	}
+	if bank == nil {
+		httputil.Error(w, http.StatusNotFound, "bank not found", "NOT_FOUND", "")
+		return
+	}
+	httputil.JSON(w, http.StatusOK, bank)
+}
+
+// Gets a bank by ID (GET /banks/{id}).
 func (h *BankHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		httputil.Error(w, http.StatusMethodNotAllowed, "method not allowed", "METHOD_NOT_ALLOWED", "")

@@ -17,14 +17,24 @@ func NewClientService(repository repository.ClientRepository) ClientService {
 	}
 }
 
-// Create creates a new client
+// Creates a new client
 func (s *clientService) Create(ctx context.Context, input domain.CreateClientInput) (*domain.Client, error) {
 	return s.repository.Create(ctx, input)
 }
 
-// GetByID gets a client by ID
+// Gets a client by ID
 func (s *clientService) GetByID(ctx context.Context, id string) (*domain.Client, error) {
 	return s.repository.GetByID(ctx, id)
+}
+
+// Updates a client
+func (s *clientService) Update(ctx context.Context, id string, input domain.UpdateClientInput) (*domain.Client, error) {
+	return s.repository.Update(ctx, id, input)
+}
+
+// Soft-deletes a client
+func (s *clientService) Delete(ctx context.Context, id string) (*domain.Client, error) {
+	return s.repository.SetInactive(ctx, id)
 }
 
 // Lists clients with pagination

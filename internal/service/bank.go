@@ -17,14 +17,24 @@ func NewBankService(repository repository.BankRepository) BankService {
 	}
 }
 
-// Create creates a new bank
+// Creates a new bank
 func (s *bankService) Create(ctx context.Context, input domain.CreateBankInput) (*domain.Bank, error) {
 	return s.repository.Create(ctx, input)
 }
 
-// GetByID gets a bank by ID
+// Gets a bank by ID
 func (s *bankService) GetByID(ctx context.Context, id string) (*domain.Bank, error) {
 	return s.repository.GetByID(ctx, id)
+}
+
+// Updates a bank
+func (s *bankService) Update(ctx context.Context, id string, input domain.UpdateBankInput) (*domain.Bank, error) {
+	return s.repository.Update(ctx, id, input)
+}
+
+// Soft-deletes a bank
+func (s *bankService) Delete(ctx context.Context, id string) (*domain.Bank, error) {
+	return s.repository.SetInactive(ctx, id)
 }
 
 // Lists banks with pagination

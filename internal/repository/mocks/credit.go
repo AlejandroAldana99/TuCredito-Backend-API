@@ -14,7 +14,9 @@ import (
 type CreditRepository struct {
 	CreateFunc         func(ctx context.Context, input domain.CreateCreditInput) (*domain.Credit, error)
 	GetByIDFunc        func(ctx context.Context, id string) (*domain.Credit, error)
+	UpdateFunc         func(ctx context.Context, id string, input domain.UpdateCreditInput) (*domain.Credit, error)
 	UpdateStatusFunc   func(ctx context.Context, id string, status domain.CreditStatus) (*domain.Credit, error)
+	SetInactiveFunc    func(ctx context.Context, id string) (*domain.Credit, error)
 	ListFunc           func(ctx context.Context, limit, offset int) ([]*domain.Credit, error)
 	ListByClientIDFunc func(ctx context.Context, clientID string, limit, offset int) ([]*domain.Credit, error)
 }
@@ -33,9 +35,23 @@ func (m *CreditRepository) GetByID(ctx context.Context, id string) (*domain.Cred
 	return nil, nil
 }
 
+func (m *CreditRepository) Update(ctx context.Context, id string, input domain.UpdateCreditInput) (*domain.Credit, error) {
+	if m.UpdateFunc != nil {
+		return m.UpdateFunc(ctx, id, input)
+	}
+	return nil, nil
+}
+
 func (m *CreditRepository) UpdateStatus(ctx context.Context, id string, status domain.CreditStatus) (*domain.Credit, error) {
 	if m.UpdateStatusFunc != nil {
 		return m.UpdateStatusFunc(ctx, id, status)
+	}
+	return nil, nil
+}
+
+func (m *CreditRepository) SetInactive(ctx context.Context, id string) (*domain.Credit, error) {
+	if m.SetInactiveFunc != nil {
+		return m.SetInactiveFunc(ctx, id)
 	}
 	return nil, nil
 }

@@ -2,7 +2,7 @@ package domain
 
 import "time"
 
-// lifecycle state of a credit application (PENDING, APPROVED, REJECTED)
+// Status of a credit application (PENDING, APPROVED, REJECTED)
 type CreditStatus string
 
 const (
@@ -20,7 +20,7 @@ const (
 	CreditTypeCommercial CreditType = "COMMERCIAL"
 )
 
-// Structure of a credit application
+// Credit structure
 type Credit struct {
 	ID         string       `json:"id"`
 	ClientID   string       `json:"client_id"`
@@ -31,9 +31,10 @@ type Credit struct {
 	CreditType CreditType   `json:"credit_type"`
 	CreatedAt  time.Time    `json:"created_at"`
 	Status     CreditStatus `json:"status"`
+	IsActive   bool         `json:"is_active"`
 }
 
-// Data required to create a credit application
+// Structure for creating a credit
 type CreateCreditInput struct {
 	ClientID   string     `json:"client_id"`
 	BankID     string     `json:"bank_id"`
@@ -43,7 +44,15 @@ type CreateCreditInput struct {
 	CreditType CreditType `json:"credit_type"`
 }
 
-// Data to update credit status
+// Structure for updating a credit status
 type UpdateCreditStatusInput struct {
 	Status CreditStatus `json:"status"`
+}
+
+// Structure for updating a credit
+type UpdateCreditInput struct {
+	MinPayment float64      `json:"min_payment"`
+	MaxPayment float64      `json:"max_payment"`
+	TermMonths int          `json:"term_months"`
+	Status     CreditStatus `json:"status"`
 }

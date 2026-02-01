@@ -93,19 +93,23 @@ func New(ctx context.Context, cfg *Config) (*Server, error) {
 	mux.HandleFunc("POST /clients", clientH.Create)
 	mux.HandleFunc("GET /clients", clientH.List)
 	mux.HandleFunc("GET /clients/{id}", clientH.GetByID)
+	mux.HandleFunc("PUT /clients/{id}", clientH.Update)
+	mux.HandleFunc("DELETE /clients/{id}", clientH.Delete)
 	mux.HandleFunc("GET /clients/{id}/credits", creditH.ListByClientID)
 
 	// Register the bank endpoints
 	mux.HandleFunc("POST /banks", bankH.Create)
 	mux.HandleFunc("GET /banks", bankH.List)
 	mux.HandleFunc("GET /banks/{id}", bankH.GetByID)
+	mux.HandleFunc("PUT /banks/{id}", bankH.Update)
+	mux.HandleFunc("DELETE /banks/{id}", bankH.Delete)
 
 	// Register the credit endpoints
 	mux.HandleFunc("POST /credits", creditH.Create)
 	mux.HandleFunc("GET /credits", creditH.List)
 	mux.HandleFunc("GET /credits/{id}", creditH.GetByID)
-	mux.HandleFunc("PATCH /credits/{id}/status", creditH.UpdateStatus)
-	mux.HandleFunc("PUT /credits/{id}/status", creditH.UpdateStatus)
+	mux.HandleFunc("PUT /credits/{id}", creditH.Update)
+	mux.HandleFunc("DELETE /credits/{id}", creditH.Delete)
 
 	// Create the middleware
 	var handler http.Handler = mux
