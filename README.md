@@ -175,7 +175,7 @@ Health and metrics (no version prefix):
 ## Postman
 
 There is a entire Postman colletion to test any of these endpoints, you have to import the collection and the environment located in:
-- Collection: ------> `./postman/TuCredito.postman_collection.json`
+- Collection: --------> `./postman/TuCredito.postman_collection.json`
 - Environment: -----> `./postman/TuCredito.postman_environment.json` 
 
 ## Tests and benchmarks
@@ -244,4 +244,6 @@ This proyect leverage the use of AI in the following scenarious:
 - Write more explicative comments in some needed sections.
 - Auto-complete sections: Tool in some IDEs to auto-complete `variables` and `logic` while coding.
 - Parts of this `README.md`: To structure a well description.
+
+> Final note: All the features and code related to AI was thoroughly reviewed and validated (according to the official documentation) to avoid AI hallucinations and errors
 
