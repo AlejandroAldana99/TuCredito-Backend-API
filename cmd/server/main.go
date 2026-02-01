@@ -24,7 +24,7 @@ func main() {
 		panic(err)
 	}
 
-	defer log.Sync()
+	defer func() { _ = log.Sync() }()
 
 	// Create the server
 	ctx := context.Background()

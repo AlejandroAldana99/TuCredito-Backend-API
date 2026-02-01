@@ -48,12 +48,12 @@ func (h *CreditHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	credit, err := h.service.Create(r.Context(), input)
 	if err != nil {
-		switch {
-		case err == service.ErrClientNotFound:
+		switch err {
+		case service.ErrClientNotFound:
 			httputil.Error(w, http.StatusNotFound, "client not found", "NOT_FOUND", "")
-		case err == service.ErrBankNotFound:
+		case service.ErrBankNotFound:
 			httputil.Error(w, http.StatusNotFound, "bank not found", "NOT_FOUND", "")
-		case err == service.ErrInvalidInput:
+		case service.ErrInvalidInput:
 			httputil.Error(w, http.StatusBadRequest, "invalid input", "VALIDATION", err.Error())
 		default:
 			h.log.Error("create credit", zap.Error(err))
