@@ -1,7 +1,4 @@
-//go:build integration
-// +build integration
-
-package postgres
+package postgres_test
 
 import (
 	"context"
@@ -10,18 +7,20 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/tucredito/backend-api/internal/domain"
+	"github.com/tucredito/backend-api/internal/repository/postgres"
 )
 
 func TestBankRepository_Create(t *testing.T) {
-	pool := integrationPool(t)
+	pool := testDBPool(t)
 	defer pool.Close()
 	ctx := context.Background()
-	repo := NewBankRepository(pool)
+	repo := postgres.NewBankRepository(pool)
 
 	input := domain.CreateBankInput{Name: "Integration Test Bank", Type: domain.BankTypePrivate}
 	bank, err := repo.Create(ctx, input)
 	require.NoError(t, err)
 	require.NotNil(t, bank)
+	defer deleteBank(t, pool, bank.ID)
 	assert.NotEmpty(t, bank.ID)
 	assert.Equal(t, input.Name, bank.Name)
 	assert.Equal(t, input.Type, bank.Type)
@@ -29,14 +28,15 @@ func TestBankRepository_Create(t *testing.T) {
 }
 
 func TestBankRepository_GetByID(t *testing.T) {
-	pool := integrationPool(t)
+	pool := testDBPool(t)
 	defer pool.Close()
 	ctx := context.Background()
-	repo := NewBankRepository(pool)
+	repo := postgres.NewBankRepository(pool)
 
 	created, err := repo.Create(ctx, domain.CreateBankInput{Name: "GetByID Bank", Type: domain.BankTypeGovernment})
 	require.NoError(t, err)
 	require.NotNil(t, created)
+	defer deleteBank(t, pool, created.ID)
 
 	got, err := repo.GetByID(ctx, created.ID)
 	require.NoError(t, err)
@@ -47,14 +47,15 @@ func TestBankRepository_GetByID(t *testing.T) {
 }
 
 func TestBankRepository_Update(t *testing.T) {
-	pool := integrationPool(t)
+	pool := testDBPool(t)
 	defer pool.Close()
 	ctx := context.Background()
-	repo := NewBankRepository(pool)
+	repo := postgres.NewBankRepository(pool)
 
 	created, err := repo.Create(ctx, domain.CreateBankInput{Name: "Original Bank", Type: domain.BankTypePrivate})
 	require.NoError(t, err)
 	require.NotNil(t, created)
+	defer deleteBank(t, pool, created.ID)
 
 	updated, err := repo.Update(ctx, created.ID, domain.UpdateBankInput{Name: "Updated Bank", Type: domain.BankTypeGovernment})
 	require.NoError(t, err)
@@ -64,14 +65,15 @@ func TestBankRepository_Update(t *testing.T) {
 }
 
 func TestBankRepository_SetInactive(t *testing.T) {
-	pool := integrationPool(t)
+	pool := testDBPool(t)
 	defer pool.Close()
 	ctx := context.Background()
-	repo := NewBankRepository(pool)
+	repo := postgres.NewBankRepository(pool)
 
 	created, err := repo.Create(ctx, domain.CreateBankInput{Name: "To Deactivate Bank", Type: domain.BankTypePrivate})
 	require.NoError(t, err)
 	require.NotNil(t, created)
+	defer deleteBank(t, pool, created.ID)
 
 	softDeleted, err := repo.SetInactive(ctx, created.ID)
 	require.NoError(t, err)
@@ -80,13 +82,15 @@ func TestBankRepository_SetInactive(t *testing.T) {
 }
 
 func TestBankRepository_List(t *testing.T) {
-	pool := integrationPool(t)
+	pool := testDBPool(t)
 	defer pool.Close()
 	ctx := context.Background()
-	repo := NewBankRepository(pool)
+	repo := postgres.NewBankRepository(pool)
 
-	_, err := repo.Create(ctx, domain.CreateBankInput{Name: "List Bank", Type: domain.BankTypePrivate})
+	bank, err := repo.Create(ctx, domain.CreateBankInput{Name: "List Bank", Type: domain.BankTypePrivate})
 	require.NoError(t, err)
+	require.NotNil(t, bank)
+	defer deleteBank(t, pool, bank.ID)
 
 	list, err := repo.List(ctx, 10, 0)
 	require.NoError(t, err)
