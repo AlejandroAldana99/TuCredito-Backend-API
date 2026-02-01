@@ -49,6 +49,8 @@ Go backend API for managing clients, banks, and credits. It exposes REST endpoin
 - **Decision engine**: Extensible rule-based engine in `internal/decision`. Rules run in order (waterfall); first approval wins. Includes payment-range and bank-type rules; easy to add priority, yield, or inventory logic.
 - **Observability**: Structured logging (zap), Prometheus-style metrics at `/metrics`, `/health` (liveness), `/ready` (readiness with Postgres/Redis). pprof at `:6060/debug/pprof/` when `PPROF_ENABLED=true`.
 
+![TuCredito Backend API architecture](assets/architecture_diagram.png)
+
 ## How to run
 
 ### With Docker Compose (recommended)
@@ -243,7 +245,7 @@ This proyect leverage the use of AI in the following scenarious:
 - Complete repetitive code: Like `test-cases`, `structs` and `mocks`.
 - Write more explicative comments in some needed sections.
 - Auto-complete sections: Tool in some IDEs to auto-complete `variables` and `logic` while coding.
-- Parts of this `README.md`: To structure a well description.
+- Parts of this `README.md`: To structure a well description and complete tables of content.
 
 > Final note: All the features and code related to AI was thoroughly reviewed and validated (according to the official documentation) to avoid AI hallucinations and errors
 
