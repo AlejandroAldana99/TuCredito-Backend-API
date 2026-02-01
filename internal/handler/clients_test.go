@@ -229,6 +229,46 @@ func TestClientHandler_Delete_NotFound(t *testing.T) {
 	require.Equal(t, http.StatusNotFound, rec.Code)
 }
 
+func TestClientHandler_Reenable(t *testing.T) {
+	log, _ := zap.NewDevelopment()
+	reenabled := &domain.Client{ID: "c1", FullName: "Jane", IsActive: true}
+	mockSvc := &handlermocks.MockClientService{}
+	mockSvc.ReenableFunc = func(_ context.Context, id string) (*domain.Client, error) {
+		if id == "c1" {
+			return reenabled, nil
+		}
+		return nil, nil
+	}
+	h := NewClientHandler(mockSvc, log)
+	mux := http.NewServeMux()
+	mux.HandleFunc("POST "+apiVersion+"/clients/{id}/reenable", h.Reenable)
+
+	req := httptest.NewRequest(http.MethodPost, "/v1/clients/c1/reenable", nil)
+	rec := httptest.NewRecorder()
+	mux.ServeHTTP(rec, req)
+
+	require.Equal(t, http.StatusOK, rec.Code)
+	var got domain.Client
+	require.NoError(t, json.NewDecoder(rec.Body).Decode(&got))
+	assert.Equal(t, "c1", got.ID)
+	assert.True(t, got.IsActive)
+}
+
+func TestClientHandler_Reenable_NotFound(t *testing.T) {
+	log, _ := zap.NewDevelopment()
+	mockSvc := &handlermocks.MockClientService{}
+	mockSvc.ReenableFunc = func(_ context.Context, _ string) (*domain.Client, error) { return nil, nil }
+	h := NewClientHandler(mockSvc, log)
+	mux := http.NewServeMux()
+	mux.HandleFunc("POST "+apiVersion+"/clients/{id}/reenable", h.Reenable)
+
+	req := httptest.NewRequest(http.MethodPost, "/v1/clients/none/reenable", nil)
+	rec := httptest.NewRecorder()
+	mux.ServeHTTP(rec, req)
+
+	require.Equal(t, http.StatusNotFound, rec.Code)
+}
+
 func TestClientHandler_MethodNotAllowed(t *testing.T) {
 	log, _ := zap.NewDevelopment()
 	mockSvc := &handlermocks.MockClientService{}

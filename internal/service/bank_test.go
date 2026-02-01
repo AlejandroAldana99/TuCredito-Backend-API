@@ -111,6 +111,35 @@ func TestBankService_Delete(t *testing.T) {
 	assert.False(t, got.IsActive)
 }
 
+func TestBankService_Reenable(t *testing.T) {
+	reenabled := &domain.Bank{ID: "b1", Name: "Bank", IsActive: true}
+	repo := &repomocks.BankRepository{}
+	repo.SetActiveFunc = func(ctx context.Context, id string) (*domain.Bank, error) {
+		if id == "b1" {
+			return reenabled, nil
+		}
+		return nil, nil
+	}
+	svc := NewBankService(repo)
+
+	got, err := svc.Reenable(context.Background(), "b1")
+	require.NoError(t, err)
+	require.NotNil(t, got)
+	assert.True(t, got.IsActive)
+}
+
+func TestBankService_Reenable_NotFound(t *testing.T) {
+	repo := &repomocks.BankRepository{}
+	repo.SetActiveFunc = func(ctx context.Context, id string) (*domain.Bank, error) {
+		return nil, nil
+	}
+	svc := NewBankService(repo)
+
+	got, err := svc.Reenable(context.Background(), "none")
+	require.NoError(t, err)
+	require.Nil(t, got)
+}
+
 func TestBankService_List(t *testing.T) {
 	list := []*domain.Bank{
 		{ID: "b1", Name: "Bank A", Type: domain.BankTypePrivate, IsActive: true},

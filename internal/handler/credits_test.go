@@ -241,3 +241,43 @@ func TestCreditHandler_Delete(t *testing.T) {
 
 	require.Equal(t, http.StatusOK, rec.Code)
 }
+
+func TestCreditHandler_Reenable(t *testing.T) {
+	log, _ := zap.NewDevelopment()
+	reenabled := &domain.Credit{ID: "cr1", ClientID: "c1", BankID: "b1", IsActive: true}
+	mockSvc := &handlermocks.MockCreditService{}
+	mockSvc.ReenableFunc = func(_ context.Context, id string) (*domain.Credit, error) {
+		if id == "cr1" {
+			return reenabled, nil
+		}
+		return nil, nil
+	}
+	h := NewCreditHandler(mockSvc, log)
+	mux := http.NewServeMux()
+	mux.HandleFunc("POST "+apiVersion+"/credits/{id}/reenable", h.Reenable)
+
+	req := httptest.NewRequest(http.MethodPost, "/v1/credits/cr1/reenable", nil)
+	rec := httptest.NewRecorder()
+	mux.ServeHTTP(rec, req)
+
+	require.Equal(t, http.StatusOK, rec.Code)
+	var got domain.Credit
+	require.NoError(t, json.NewDecoder(rec.Body).Decode(&got))
+	assert.Equal(t, "cr1", got.ID)
+	assert.True(t, got.IsActive)
+}
+
+func TestCreditHandler_Reenable_NotFound(t *testing.T) {
+	log, _ := zap.NewDevelopment()
+	mockSvc := &handlermocks.MockCreditService{}
+	mockSvc.ReenableFunc = func(_ context.Context, _ string) (*domain.Credit, error) { return nil, nil }
+	h := NewCreditHandler(mockSvc, log)
+	mux := http.NewServeMux()
+	mux.HandleFunc("POST "+apiVersion+"/credits/{id}/reenable", h.Reenable)
+
+	req := httptest.NewRequest(http.MethodPost, "/v1/credits/none/reenable", nil)
+	rec := httptest.NewRecorder()
+	mux.ServeHTTP(rec, req)
+
+	require.Equal(t, http.StatusNotFound, rec.Code)
+}

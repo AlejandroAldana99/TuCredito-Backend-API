@@ -81,6 +81,38 @@ func TestBankRepository_SetInactive(t *testing.T) {
 	assert.False(t, softDeleted.IsActive)
 }
 
+func TestBankRepository_SetActive(t *testing.T) {
+	pool := testDBPool(t)
+	defer pool.Close()
+	ctx := context.Background()
+	repo := postgres.NewBankRepository(pool)
+
+	created, err := repo.Create(ctx, domain.CreateBankInput{Name: "To Reenable Bank", Type: domain.BankTypePrivate})
+	require.NoError(t, err)
+	require.NotNil(t, created)
+	defer deleteBank(t, pool, created.ID)
+
+	_, err = repo.SetInactive(ctx, created.ID)
+	require.NoError(t, err)
+
+	reenabled, err := repo.SetActive(ctx, created.ID)
+	require.NoError(t, err)
+	require.NotNil(t, reenabled)
+	assert.True(t, reenabled.IsActive)
+	assert.Equal(t, created.ID, reenabled.ID)
+}
+
+func TestBankRepository_SetActive_NotFound(t *testing.T) {
+	pool := testDBPool(t)
+	defer pool.Close()
+	ctx := context.Background()
+	repo := postgres.NewBankRepository(pool)
+
+	got, err := repo.SetActive(ctx, "00000000-0000-0000-0000-000000000000")
+	require.NoError(t, err)
+	require.Nil(t, got)
+}
+
 func TestBankRepository_List(t *testing.T) {
 	pool := testDBPool(t)
 	defer pool.Close()

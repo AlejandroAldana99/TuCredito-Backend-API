@@ -112,3 +112,44 @@ func TestCreditService_CreateSync_Success(t *testing.T) {
 	events := publisher.Events()
 	assert.GreaterOrEqual(t, len(events), 1)
 }
+
+func TestCreditService_Reenable(t *testing.T) {
+	reenabled := &domain.Credit{ID: "cr1", ClientID: "c1", BankID: "b1", IsActive: true}
+	creditRepo := &repomocks.CreditRepository{}
+	creditRepo.SetActiveFunc = func(ctx context.Context, id string) (*domain.Credit, error) {
+		if id == "cr1" {
+			return reenabled, nil
+		}
+		return nil, nil
+	}
+	clientRepo := &repomocks.ClientRepository{}
+	bankRepo := &repomocks.BankRepository{}
+	publisher := event.NewMockPublisher()
+	engine := decision.NewRuleEngine()
+	log, _ := zap.NewDevelopment()
+	svc := NewCreditService(creditRepo, clientRepo, bankRepo, nil, publisher, engine, log)
+	defer svc.Shutdown()
+
+	got, err := svc.Reenable(context.Background(), "cr1")
+	require.NoError(t, err)
+	require.NotNil(t, got)
+	assert.True(t, got.IsActive)
+}
+
+func TestCreditService_Reenable_NotFound(t *testing.T) {
+	creditRepo := &repomocks.CreditRepository{}
+	creditRepo.SetActiveFunc = func(ctx context.Context, id string) (*domain.Credit, error) {
+		return nil, nil
+	}
+	clientRepo := &repomocks.ClientRepository{}
+	bankRepo := &repomocks.BankRepository{}
+	publisher := event.NewMockPublisher()
+	engine := decision.NewRuleEngine()
+	log, _ := zap.NewDevelopment()
+	svc := NewCreditService(creditRepo, clientRepo, bankRepo, nil, publisher, engine, log)
+	defer svc.Shutdown()
+
+	got, err := svc.Reenable(context.Background(), "none")
+	require.NoError(t, err)
+	require.Nil(t, got)
+}

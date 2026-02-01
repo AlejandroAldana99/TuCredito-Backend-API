@@ -198,3 +198,43 @@ func TestBankHandler_Delete_NotFound(t *testing.T) {
 
 	require.Equal(t, http.StatusNotFound, rec.Code)
 }
+
+func TestBankHandler_Reenable(t *testing.T) {
+	log, _ := zap.NewDevelopment()
+	reenabled := &domain.Bank{ID: "b1", Name: "Bank", IsActive: true}
+	mockSvc := &handlermocks.MockBankService{}
+	mockSvc.ReenableFunc = func(_ context.Context, id string) (*domain.Bank, error) {
+		if id == "b1" {
+			return reenabled, nil
+		}
+		return nil, nil
+	}
+	h := NewBankHandler(mockSvc, log)
+	mux := http.NewServeMux()
+	mux.HandleFunc("POST "+apiVersion+"/banks/{id}/reenable", h.Reenable)
+
+	req := httptest.NewRequest(http.MethodPost, "/v1/banks/b1/reenable", nil)
+	rec := httptest.NewRecorder()
+	mux.ServeHTTP(rec, req)
+
+	require.Equal(t, http.StatusOK, rec.Code)
+	var got domain.Bank
+	require.NoError(t, json.NewDecoder(rec.Body).Decode(&got))
+	assert.Equal(t, "b1", got.ID)
+	assert.True(t, got.IsActive)
+}
+
+func TestBankHandler_Reenable_NotFound(t *testing.T) {
+	log, _ := zap.NewDevelopment()
+	mockSvc := &handlermocks.MockBankService{}
+	mockSvc.ReenableFunc = func(_ context.Context, _ string) (*domain.Bank, error) { return nil, nil }
+	h := NewBankHandler(mockSvc, log)
+	mux := http.NewServeMux()
+	mux.HandleFunc("POST "+apiVersion+"/banks/{id}/reenable", h.Reenable)
+
+	req := httptest.NewRequest(http.MethodPost, "/v1/banks/none/reenable", nil)
+	rec := httptest.NewRecorder()
+	mux.ServeHTTP(rec, req)
+
+	require.Equal(t, http.StatusNotFound, rec.Code)
+}

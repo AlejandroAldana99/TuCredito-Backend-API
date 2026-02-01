@@ -110,6 +110,43 @@ func TestClientRepository_SetInactive(t *testing.T) {
 	assert.False(t, softDeleted.IsActive)
 }
 
+func TestClientRepository_SetActive(t *testing.T) {
+	pool := testDBPool(t)
+	defer pool.Close()
+	ctx := context.Background()
+	repo := postgres.NewClientRepository(pool)
+
+	created, err := repo.Create(ctx, domain.CreateClientInput{
+		FullName:  "To Reenable",
+		Email:     uniqueClientEmail(t),
+		BirthDate: time.Date(1988, 8, 8, 0, 0, 0, 0, time.UTC),
+		Country:   "US",
+	})
+	require.NoError(t, err)
+	require.NotNil(t, created)
+	defer deleteClient(t, pool, created.ID)
+
+	_, err = repo.SetInactive(ctx, created.ID)
+	require.NoError(t, err)
+
+	reenabled, err := repo.SetActive(ctx, created.ID)
+	require.NoError(t, err)
+	require.NotNil(t, reenabled)
+	assert.True(t, reenabled.IsActive)
+	assert.Equal(t, created.ID, reenabled.ID)
+}
+
+func TestClientRepository_SetActive_NotFound(t *testing.T) {
+	pool := testDBPool(t)
+	defer pool.Close()
+	ctx := context.Background()
+	repo := postgres.NewClientRepository(pool)
+
+	got, err := repo.SetActive(ctx, "00000000-0000-0000-0000-000000000000")
+	require.NoError(t, err)
+	require.Nil(t, got)
+}
+
 func TestClientRepository_List(t *testing.T) {
 	pool := testDBPool(t)
 	defer pool.Close()

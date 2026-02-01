@@ -146,6 +146,50 @@ func TestCreditRepository_SetInactive(t *testing.T) {
 	assert.False(t, softDeleted.IsActive)
 }
 
+func TestCreditRepository_SetActive(t *testing.T) {
+	pool := testDBPool(t)
+	defer pool.Close()
+	ctx := context.Background()
+	clientRepo := postgres.NewClientRepository(pool)
+	bankRepo := postgres.NewBankRepository(pool)
+	creditRepo := postgres.NewCreditRepository(pool)
+
+	client, err := clientRepo.Create(ctx, domain.CreateClientInput{FullName: "C", Email: uniqueClientEmail(t), BirthDate: time.Date(1990, 1, 1, 0, 0, 0, 0, time.UTC), Country: "US"})
+	require.NoError(t, err)
+	require.NotNil(t, client)
+	defer deleteClient(t, pool, client.ID)
+	bank, err := bankRepo.Create(ctx, domain.CreateBankInput{Name: "B", Type: domain.BankTypePrivate})
+	require.NoError(t, err)
+	require.NotNil(t, bank)
+	defer deleteBank(t, pool, bank.ID)
+	created, err := creditRepo.Create(ctx, domain.CreateCreditInput{
+		ClientID: client.ID, BankID: bank.ID, MinPayment: 100, MaxPayment: 500, TermMonths: 12, CreditType: domain.CreditTypeAuto,
+	})
+	require.NoError(t, err)
+	require.NotNil(t, created)
+	defer deleteCredit(t, pool, created.ID)
+
+	_, err = creditRepo.SetInactive(ctx, created.ID)
+	require.NoError(t, err)
+
+	reenabled, err := creditRepo.SetActive(ctx, created.ID)
+	require.NoError(t, err)
+	require.NotNil(t, reenabled)
+	assert.True(t, reenabled.IsActive)
+	assert.Equal(t, created.ID, reenabled.ID)
+}
+
+func TestCreditRepository_SetActive_NotFound(t *testing.T) {
+	pool := testDBPool(t)
+	defer pool.Close()
+	ctx := context.Background()
+	creditRepo := postgres.NewCreditRepository(pool)
+
+	got, err := creditRepo.SetActive(ctx, "00000000-0000-0000-0000-000000000000")
+	require.NoError(t, err)
+	require.Nil(t, got)
+}
+
 func TestCreditRepository_List(t *testing.T) {
 	pool := testDBPool(t)
 	defer pool.Close()

@@ -116,6 +116,35 @@ func TestClientService_Delete(t *testing.T) {
 	assert.False(t, got.IsActive)
 }
 
+func TestClientService_Reenable(t *testing.T) {
+	reenabled := &domain.Client{ID: "c1", FullName: "Jane", IsActive: true}
+	repo := &repomocks.ClientRepository{}
+	repo.SetActiveFunc = func(ctx context.Context, id string) (*domain.Client, error) {
+		if id == "c1" {
+			return reenabled, nil
+		}
+		return nil, nil
+	}
+	svc := NewClientService(repo)
+
+	got, err := svc.Reenable(context.Background(), "c1")
+	require.NoError(t, err)
+	require.NotNil(t, got)
+	assert.True(t, got.IsActive)
+}
+
+func TestClientService_Reenable_NotFound(t *testing.T) {
+	repo := &repomocks.ClientRepository{}
+	repo.SetActiveFunc = func(ctx context.Context, id string) (*domain.Client, error) {
+		return nil, nil
+	}
+	svc := NewClientService(repo)
+
+	got, err := svc.Reenable(context.Background(), "none")
+	require.NoError(t, err)
+	require.Nil(t, got)
+}
+
 func TestClientService_List(t *testing.T) {
 	list := []*domain.Client{
 		{ID: "c1", FullName: "A", Email: "a@b.com", Country: "US", IsActive: true},
