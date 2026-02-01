@@ -105,6 +105,7 @@ func New(ctx context.Context, cfg *Config) (*Server, error) {
 	var handler http.Handler = mux
 	handler = middleware.Logging(cfg.Log)(handler)
 	handler = middleware.RateLimit(c, 100, 60)(handler)
+	handler = middleware.Recovery(cfg.Log)(handler)
 
 	// Create the HTTP server
 	httpServer := &http.Server{
