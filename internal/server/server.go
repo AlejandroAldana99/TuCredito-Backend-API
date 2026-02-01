@@ -11,20 +11,19 @@ import (
 	"github.com/tucredito/backend-api/internal/decision"
 	"github.com/tucredito/backend-api/internal/event"
 	"github.com/tucredito/backend-api/internal/handler"
+	"github.com/tucredito/backend-api/internal/metrics"
 	"github.com/tucredito/backend-api/internal/middleware"
 	"github.com/tucredito/backend-api/internal/repository/postgres"
 	"github.com/tucredito/backend-api/internal/service"
 	"go.uber.org/zap"
 )
 
-// Server holds HTTP server and dependencies.
 type Server struct {
 	httpServer *http.Server
 	creditSvc  *service.CreditService
 	log        *zap.Logger
 }
 
-// Config holds server configuration.
 type Config struct {
 	HTTPPort     int
 	DBConnString string
@@ -34,7 +33,7 @@ type Config struct {
 	Log          *zap.Logger
 }
 
-// New builds the server and wires dependencies.
+// Builds the server and wires dependencies
 func New(ctx context.Context, cfg *Config) (*Server, error) {
 	// Create the database pool
 	pool, err := postgres.NewPool(ctx, cfg.DBConnString)
@@ -110,7 +109,7 @@ func New(ctx context.Context, cfg *Config) (*Server, error) {
 	// Create the HTTP server
 	httpServer := &http.Server{
 		Addr:         ":" + strconv.Itoa(cfg.HTTPPort),
-		Handler:      handler,
+		Handler:      metricsMiddleware(handler),
 		ReadTimeout:  15 * time.Second,
 		WriteTimeout: 15 * time.Second,
 		IdleTimeout:  60 * time.Second,
@@ -122,13 +121,24 @@ func New(ctx context.Context, cfg *Config) (*Server, error) {
 	}, nil
 }
 
-// ListenAndServe starts the HTTP server (blocks until error or shutdown).
+// Starts the HTTP server (blocks until error or shutdown)
 func (s *Server) ListenAndServe() error {
 	return s.httpServer.ListenAndServe()
 }
 
-// Shutdown gracefully stops the server.
+// Gracefully stops the server
 func (s *Server) Shutdown(ctx context.Context) error {
 	s.creditSvc.Shutdown()
 	return s.httpServer.Shutdown(ctx)
+}
+
+// Records request count and duration per path
+func metricsMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+		path := r.Method + " " + r.URL.Path
+		metrics.IncHTTPRequest(path)
+		next.ServeHTTP(w, r)
+		metrics.ObserveHTTPDuration(path, time.Since(start))
+	})
 }
