@@ -9,7 +9,8 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
-CREATE TRIGGER update_credits_updated_at
+CREATE OR REPLACE TRIGGER update_credits_updated_at
     BEFORE UPDATE ON credits
     FOR EACH ROW
-    EXECUTE PROCEDURE update_updated_at_column();
+    EXECUTE FUNCTION update_updated_at_column();
+

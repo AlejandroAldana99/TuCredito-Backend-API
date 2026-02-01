@@ -5,7 +5,7 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- Clients:
-CREATE TABLE clients (
+CREATE TABLE IF NOT EXISTS clients (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     full_name VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
@@ -15,7 +15,7 @@ CREATE TABLE clients (
 );
 
 -- Banks:
-CREATE TABLE banks (
+CREATE TABLE IF NOT EXISTS banks (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name VARCHAR(255) NOT NULL,
     type VARCHAR(20) NOT NULL CHECK (type IN ('PRIVATE', 'GOVERNMENT')),
@@ -23,7 +23,7 @@ CREATE TABLE banks (
 );
 
 -- Credits:
-CREATE TABLE credits (
+CREATE TABLE IF NOT EXISTS credits (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     client_id UUID NOT NULL REFERENCES clients(id) ON DELETE CASCADE,
     bank_id UUID NOT NULL REFERENCES banks(id) ON DELETE RESTRICT,

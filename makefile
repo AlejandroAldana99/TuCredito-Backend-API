@@ -5,11 +5,11 @@
 
 # migrations
 migrations-up:
-	migrate -source ./migrations -database $(DATABASE_URL) up
+	migrate -path ./migrations -database $(DATABASE_URL) up
 
 # migrations-down
 migrations-down:
-	migrate -source ./migrations -database $(DATABASE_URL) down
+	migrate -path ./migrations -database $(DATABASE_URL) down
 
 # create-migration
 create-migration:
