@@ -94,6 +94,7 @@ func New(ctx context.Context, cfg *Config) (*Server, error) {
 	mux.HandleFunc("POST /clients", clientH.Create)
 	mux.HandleFunc("GET /clients", clientH.List)
 	mux.HandleFunc("GET /clients/{id}", clientH.GetByID)
+	mux.HandleFunc("GET /clients/{id}/credits", creditH.ListByClientID)
 
 	// Register the bank endpoints
 	mux.HandleFunc("POST /banks", bankH.Create)
