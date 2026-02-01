@@ -19,3 +19,12 @@ type BankRepository interface {
 	GetByID(ctx context.Context, id string) (*domain.Bank, error)
 	List(ctx context.Context, limit, offset int) ([]*domain.Bank, error)
 }
+
+// CreditRepository defines persistence operations for credits.
+type CreditRepository interface {
+	Create(ctx context.Context, input domain.CreateCreditInput) (*domain.Credit, error)
+	GetByID(ctx context.Context, id string) (*domain.Credit, error)
+	UpdateStatus(ctx context.Context, id string, status domain.CreditStatus) (*domain.Credit, error)
+	List(ctx context.Context, limit, offset int) ([]*domain.Credit, error)
+	ListByClientID(ctx context.Context, clientID string, limit, offset int) ([]*domain.Credit, error)
+}

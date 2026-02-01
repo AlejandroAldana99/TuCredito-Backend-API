@@ -8,6 +8,8 @@ import (
 
 	"github.com/redis/go-redis/v9"
 	"github.com/tucredito/backend-api/internal/cache"
+	"github.com/tucredito/backend-api/internal/decision"
+	"github.com/tucredito/backend-api/internal/event"
 	"github.com/tucredito/backend-api/internal/handler"
 	"github.com/tucredito/backend-api/internal/middleware"
 	"github.com/tucredito/backend-api/internal/repository/postgres"
@@ -18,6 +20,7 @@ import (
 // Server holds HTTP server and dependencies.
 type Server struct {
 	httpServer *http.Server
+	creditSvc  *service.CreditService
 	log        *zap.Logger
 }
 
@@ -42,6 +45,7 @@ func New(ctx context.Context, cfg *Config) (*Server, error) {
 	// Create repositories
 	clientRepo := postgres.NewClientRepository(pool)
 	bankRepo := postgres.NewBankRepository(pool)
+	creditRepo := postgres.NewCreditRepository(pool)
 
 	// Create the cache
 	var c cache.Cache
@@ -62,13 +66,21 @@ func New(ctx context.Context, cfg *Config) (*Server, error) {
 		}
 	}
 
+	// Create the publisher and engine
+	publisher := event.NewMockPublisher()
+	engine := decision.NewRuleEngine()
+	engine.RegisterRule(decision.PaymentRangeRule{})
+	engine.RegisterRule(decision.BankTypeRule{})
+
 	// Create the services
 	clientSvc := service.NewClientService(clientRepo)
 	bankSvc := service.NewBankService(bankRepo)
+	creditSvc := service.NewCreditService(creditRepo, clientRepo, bankRepo, c, publisher, engine, cfg.Log)
 
 	// Create the handlers
 	clientH := handler.NewClientHandler(clientSvc, cfg.Log)
 	bankH := handler.NewBankHandler(bankSvc, cfg.Log)
+	creditH := handler.NewCreditHandler(creditSvc, cfg.Log)
 
 	// Initialize the HTTP server
 	mux := http.NewServeMux()
@@ -82,6 +94,13 @@ func New(ctx context.Context, cfg *Config) (*Server, error) {
 	mux.HandleFunc("POST /banks", bankH.Create)
 	mux.HandleFunc("GET /banks", bankH.List)
 	mux.HandleFunc("GET /banks/{id}", bankH.GetByID)
+
+	// Register the credit endpoints
+	mux.HandleFunc("POST /credits", creditH.Create)
+	mux.HandleFunc("GET /credits", creditH.List)
+	mux.HandleFunc("GET /credits/{id}", creditH.GetByID)
+	mux.HandleFunc("PATCH /credits/{id}/status", creditH.UpdateStatus)
+	mux.HandleFunc("PUT /credits/{id}/status", creditH.UpdateStatus)
 
 	// Create the middleware
 	var handler http.Handler = mux
@@ -110,5 +129,6 @@ func (s *Server) ListenAndServe() error {
 
 // Shutdown gracefully stops the server.
 func (s *Server) Shutdown(ctx context.Context) error {
+	s.creditSvc.Shutdown()
 	return s.httpServer.Shutdown(ctx)
 }
