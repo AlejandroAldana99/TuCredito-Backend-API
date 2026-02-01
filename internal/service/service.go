@@ -27,6 +27,7 @@ type BankService interface {
 // CreditService defines the methods for credit service logic
 type CreditService interface {
 	Create(ctx context.Context, input domain.CreateCreditInput) (*domain.Credit, error)
+	CreateSync(ctx context.Context, input domain.CreateCreditInput) (*domain.Credit, error)
 	GetByID(ctx context.Context, id string) (*domain.Credit, error)
 	Update(ctx context.Context, id string, input domain.UpdateCreditInput) (*domain.Credit, error)
 	UpdateStatus(ctx context.Context, id string, status domain.CreditStatus) (*domain.Credit, error)

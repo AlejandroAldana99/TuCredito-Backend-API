@@ -99,6 +99,7 @@ var _ service.BankService = (*MockBankService)(nil)
 
 type MockCreditService struct {
 	CreateFunc         func(ctx context.Context, input domain.CreateCreditInput) (*domain.Credit, error)
+	CreateSyncFunc     func(ctx context.Context, input domain.CreateCreditInput) (*domain.Credit, error)
 	GetByIDFunc        func(ctx context.Context, id string) (*domain.Credit, error)
 	UpdateFunc         func(ctx context.Context, id string, input domain.UpdateCreditInput) (*domain.Credit, error)
 	UpdateStatusFunc   func(ctx context.Context, id string, status domain.CreditStatus) (*domain.Credit, error)
@@ -110,6 +111,13 @@ type MockCreditService struct {
 func (m *MockCreditService) Create(ctx context.Context, input domain.CreateCreditInput) (*domain.Credit, error) {
 	if m.CreateFunc != nil {
 		return m.CreateFunc(ctx, input)
+	}
+	return nil, nil
+}
+
+func (m *MockCreditService) CreateSync(ctx context.Context, input domain.CreateCreditInput) (*domain.Credit, error) {
+	if m.CreateSyncFunc != nil {
+		return m.CreateSyncFunc(ctx, input)
 	}
 	return nil, nil
 }

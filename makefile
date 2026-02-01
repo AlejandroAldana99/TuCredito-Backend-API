@@ -80,7 +80,7 @@ go-test:
 
 # Run benchmarks
 go-bench:
-	go test ./internal/service/... -bench=. -benchmem -run=^$ -count=1
+	go test ./benchmarks/... -bench=. -benchmem -run=^$ -count=1
 
 
 ## GO BUILD AND RUN

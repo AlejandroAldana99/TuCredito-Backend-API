@@ -26,7 +26,7 @@ func TestCreditService_CreateSync_InvalidInput(t *testing.T) {
 	svc := NewCreditService(creditRepo, clientRepo, bankRepo, nil, publisher, engine, log)
 	defer svc.Shutdown()
 
-	_, err := svc.(*creditService).CreateSync(context.Background(), domain.CreateCreditInput{
+	_, err := svc.CreateSync(context.Background(), domain.CreateCreditInput{
 		ClientID:   "c1",
 		BankID:     "b1",
 		MinPayment: 100,
@@ -52,7 +52,7 @@ func TestCreditService_CreateSync_ClientNotFound(t *testing.T) {
 	svc := NewCreditService(creditRepo, clientRepo, bankRepo, nil, publisher, engine, log)
 	defer svc.Shutdown()
 
-	_, err := svc.(*creditService).CreateSync(context.Background(), domain.CreateCreditInput{
+	_, err := svc.CreateSync(context.Background(), domain.CreateCreditInput{
 		ClientID:   "c1",
 		BankID:     "b1",
 		MinPayment: 100,
@@ -98,7 +98,7 @@ func TestCreditService_CreateSync_Success(t *testing.T) {
 	svc := NewCreditService(creditRepo, clientRepo, bankRepo, nil, publisher, engine, log)
 	defer svc.Shutdown()
 
-	out, err := svc.(*creditService).CreateSync(context.Background(), domain.CreateCreditInput{
+	out, err := svc.CreateSync(context.Background(), domain.CreateCreditInput{
 		ClientID:   "c1",
 		BankID:     "b1",
 		MinPayment: 100,
