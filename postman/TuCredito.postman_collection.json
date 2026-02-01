@@ -1,0 +1,609 @@
+{
+  "info": {
+    "_postman_id": "e219a976-1606-4451-ba7b-0ae8f84bd3d9",
+    "name": "TuCredito",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "14151799"
+  },
+  "item": [
+    {
+      "name": "Clients",
+      "item": [
+        {
+          "name": "clients",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();\r",
+                  "pm.environment.set(\"client_id\", jsonData.id)"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"full_name\": \"Alejandro Aldana\",\r\n    \"email\": \"alejandro.aldana@example1.com\",\r\n    \"birth_date\": \"1999-01-25T00:00:00Z\",\r\n    \"country\": \"MX\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{tucredito_base_dns}}/clients",
+              "host": [
+                "{{tucredito_base_dns}}"
+              ],
+              "path": [
+                "clients"
+              ]
+            },
+            "description": "Generated from cURL: curl -s -X POST http://localhost:8080/clients \\\r\n  -H \"Content-Type: application/json\" \\\r\n  -d '{\r\n    \"full_name\": \"Jane Doe\",\r\n    \"email\": \"jane.doe@example.com\",\r\n    \"birth_date\": \"1990-05-15T00:00:00Z\",\r\n    \"country\": \"US\"\r\n  }'"
+          },
+          "response": []
+        },
+        {
+          "name": "clients",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{tucredito_base_dns}}/clients?limit=10&offset=0",
+              "host": [
+                "{{tucredito_base_dns}}"
+              ],
+              "path": [
+                "clients"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                }
+              ]
+            },
+            "description": "Generated from cURL: curl -s \"http://localhost:8080/clients?limit=10&offset=0\""
+          },
+          "response": []
+        },
+        {
+          "name": "clients credits",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{tucredito_base_dns}}/clients/{{client_id}}/credits?limit=10&offset=0",
+              "host": [
+                "{{tucredito_base_dns}}"
+              ],
+              "path": [
+                "clients",
+                "{{client_id}}",
+                "credits"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                }
+              ]
+            },
+            "description": "Generated from cURL: curl -s http://localhost:8080/clients/{client_id}/credits"
+          },
+          "response": []
+        },
+        {
+          "name": "clients by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{tucredito_base_dns}}/clients/{{client_id}}",
+              "host": [
+                "{{tucredito_base_dns}}"
+              ],
+              "path": [
+                "clients",
+                "{{client_id}}"
+              ]
+            },
+            "description": "Generated from cURL: curl -s http://localhost:8080/clients/{client_id}"
+          },
+          "response": []
+        },
+        {
+          "name": "clients",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"full_name\": \"Alejandro Aldana\",\r\n    \"email\": \"alejandro.aldana@example.com\",\r\n    \"birth_date\": \"1999-01-25T00:00:00Z\",\r\n\t\"country\": \"US\"\r\n}\r\n\r\n  ",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{tucredito_base_dns}}/clients/{{client_id}}",
+              "host": [
+                "{{tucredito_base_dns}}"
+              ],
+              "path": [
+                "clients",
+                "{{client_id}}"
+              ]
+            },
+            "description": "Generated from cURL: curl -s -X PUT http://localhost:8080/clients/{client_id} \\\r\n  -H \"Content-Type: application/json\" \\\r\n  -d '{\r\n    \"full_name\": \"Jane Doe Updated\",\r\n    \"email\": \"jane.updated@example.com\",\r\n    \"birth_date\": \"1990-05-15T00:00:00Z\",\r\n    \"country\": \"US\"\r\n  }'"
+          },
+          "response": []
+        },
+        {
+          "name": "clients",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{tucredito_base_dns}}/clients/{{client_id}}",
+              "host": [
+                "{{tucredito_base_dns}}"
+              ],
+              "path": [
+                "clients",
+                "{{client_id}}"
+              ]
+            },
+            "description": "Generated from cURL: curl -s -X DELETE http://localhost:8080/clients/{client_id}"
+          },
+          "response": []
+        },
+        {
+          "name": "re-enable",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{tucredito_base_dns}}/clients/{{client_id}}/reenable",
+              "host": [
+                "{{tucredito_base_dns}}"
+              ],
+              "path": [
+                "clients",
+                "{{client_id}}",
+                "reenable"
+              ]
+            },
+            "description": "Generated from cURL: curl -s -X DELETE http://localhost:8080/clients/{client_id}"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Banks",
+      "item": [
+        {
+          "name": "banks",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();\r",
+                  "pm.environment.set(\"bank_id\", jsonData.id)"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"name\": \"National Bank\",\r\n    \"type\": \"PRIVATE\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{tucredito_base_dns}}/banks",
+              "host": [
+                "{{tucredito_base_dns}}"
+              ],
+              "path": [
+                "banks"
+              ]
+            },
+            "description": "Generated from cURL: curl -s -X POST http://localhost:8080/banks \\\r\n  -H \"Content-Type: application/json\" \\\r\n  -d '{\r\n    \"name\": \"First National Bank\",\r\n    \"type\": \"PRIVATE\"\r\n  }'"
+          },
+          "response": []
+        },
+        {
+          "name": "banks",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{tucredito_base_dns}}/banks?limit=10&offset=0",
+              "host": [
+                "{{tucredito_base_dns}}"
+              ],
+              "path": [
+                "banks"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                }
+              ]
+            },
+            "description": "Generated from cURL: curl -s \"http://localhost:8080/banks?limit=10&offset=0\""
+          },
+          "response": []
+        },
+        {
+          "name": "banks by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{tucredito_base_dns}}/banks/{{bank_id}}",
+              "host": [
+                "{{tucredito_base_dns}}"
+              ],
+              "path": [
+                "banks",
+                "{{bank_id}}"
+              ]
+            },
+            "description": "Generated from cURL: curl -s http://localhost:8080/banks/{bank_id}"
+          },
+          "response": []
+        },
+        {
+          "name": "banks",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"name\": \"Renamed Bank\", \r\n    \"type\": \"PRIVATE\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{tucredito_base_dns}}/banks/{{bank_id}}",
+              "host": [
+                "{{tucredito_base_dns}}"
+              ],
+              "path": [
+                "banks",
+                "{{bank_id}}"
+              ]
+            },
+            "description": "Generated from cURL: curl -s -X PUT http://localhost:8080/banks/{bank_id} \\\r\n  -H \"Content-Type: application/json\" \\\r\n  -d '{\"name\": \"Renamed Bank\", \"type\": \"GOVERNMENT\"}'"
+          },
+          "response": []
+        },
+        {
+          "name": "banks",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{tucredito_base_dns}}/banks/{{bank_id}}",
+              "host": [
+                "{{tucredito_base_dns}}"
+              ],
+              "path": [
+                "banks",
+                "{{bank_id}}"
+              ]
+            },
+            "description": "Generated from cURL: curl -s -X DELETE http://localhost:8080/banks/{bank_id}"
+          },
+          "response": []
+        },
+        {
+          "name": "re-enable",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{tucredito_base_dns}}/banks/{{bank_id}}/reenable",
+              "host": [
+                "{{tucredito_base_dns}}"
+              ],
+              "path": [
+                "banks",
+                "{{bank_id}}",
+                "reenable"
+              ]
+            },
+            "description": "Generated from cURL: curl -s -X DELETE http://localhost:8080/banks/{bank_id}"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Credits",
+      "item": [
+        {
+          "name": "credits",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();\r",
+                  "pm.environment.set(\"credit_id\", jsonData.id)"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"client_id\": \"{{client_id}}\",\r\n    \"bank_id\": \"{{bank_id}}\",\r\n    \"min_payment\": 100.00,\r\n    \"max_payment\": 500.00,\r\n    \"term_months\": 24,\r\n    \"credit_type\": \"AUTO\"\r\n  }",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{tucredito_base_dns}}/credits",
+              "host": [
+                "{{tucredito_base_dns}}"
+              ],
+              "path": [
+                "credits"
+              ]
+            },
+            "description": "Generated from cURL: curl -s -X POST http://localhost:8080/credits \\\r\n  -H \"Content-Type: application/json\" \\\r\n  -d '{\r\n    \"client_id\": \"{client_id}\",\r\n    \"bank_id\": \"{bank_id}\",\r\n    \"min_payment\": 100.00,\r\n    \"max_payment\": 500.00,\r\n    \"term_months\": 24,\r\n    \"credit_type\": \"AUTO\"\r\n  }'"
+          },
+          "response": []
+        },
+        {
+          "name": "credits",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{tucredito_base_dns}}/credits?limit=10&offset=0",
+              "host": [
+                "{{tucredito_base_dns}}"
+              ],
+              "path": [
+                "credits"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                }
+              ]
+            },
+            "description": "Generated from cURL: curl -s \"http://localhost:8080/credits?limit=10&offset=0\""
+          },
+          "response": []
+        },
+        {
+          "name": "credits by id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{tucredito_base_dns}}/credits/{{credit_id}}",
+              "host": [
+                "{{tucredito_base_dns}}"
+              ],
+              "path": [
+                "credits",
+                "{{credit_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "credits",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"min_payment\": 150.00,\r\n  \"max_payment\": 600.00,\r\n  \"term_months\": 36,\r\n  \"status\": \"PENDING\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{tucredito_base_dns}}/credits/{{credit_id}}",
+              "host": [
+                "{{tucredito_base_dns}}"
+              ],
+              "path": [
+                "credits",
+                "{{credit_id}}"
+              ]
+            },
+            "description": "Generated from cURL: curl -s -X PUT http://localhost:8080/credits/{credit_id}/status \\\r\n  -H \"Content-Type: application/json\" \\\r\n  -d '{\"status\": \"REJECTED\"}'"
+          },
+          "response": []
+        },
+        {
+          "name": "credits",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{tucredito_base_dns}}/credits/{{credit_id}}",
+              "host": [
+                "{{tucredito_base_dns}}"
+              ],
+              "path": [
+                "credits",
+                "{{credit_id}}"
+              ]
+            },
+            "description": "Generated from cURL: curl -s -X DELETE http://localhost:8080/credits/{credit_id}"
+          },
+          "response": []
+        },
+        {
+          "name": "credits Copy",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{tucredito_base_dns}}/credits/{{credit_id}}/reenable",
+              "host": [
+                "{{tucredito_base_dns}}"
+              ],
+              "path": [
+                "credits",
+                "{{credit_id}}",
+                "reenable"
+              ]
+            },
+            "description": "Generated from cURL: curl -s -X DELETE http://localhost:8080/credits/{credit_id}"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "health",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/health",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "health"
+          ]
+        },
+        "description": "Generated from cURL: curl -s http://localhost:8080/health"
+      },
+      "response": []
+    },
+    {
+      "name": "ready",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/ready",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "ready"
+          ]
+        },
+        "description": "Generated from cURL: curl -s http://localhost:8080/ready"
+      },
+      "response": []
+    },
+    {
+      "name": "metrics",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/metrics",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "metrics"
+          ]
+        },
+        "description": "Generated from cURL: curl -s http://localhost:8080/metrics"
+      },
+      "response": []
+    }
+  ]
+}
