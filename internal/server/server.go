@@ -80,9 +80,15 @@ func New(ctx context.Context, cfg *Config) (*Server, error) {
 	clientH := handler.NewClientHandler(clientSvc, cfg.Log)
 	bankH := handler.NewBankHandler(bankSvc, cfg.Log)
 	creditH := handler.NewCreditHandler(creditSvc, cfg.Log)
+	healthH := handler.NewHealthHandler(pool, redisClient)
 
 	// Initialize the HTTP server
 	mux := http.NewServeMux()
+
+	// Register the health check endpoints
+	mux.HandleFunc("GET /health", healthH.Live)
+	mux.HandleFunc("GET /ready", healthH.Ready)
+	mux.HandleFunc("GET /metrics", metrics.Handler)
 
 	// Register the client endpoints
 	mux.HandleFunc("POST /clients", clientH.Create)
