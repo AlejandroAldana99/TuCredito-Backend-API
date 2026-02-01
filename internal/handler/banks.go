@@ -11,21 +11,19 @@ import (
 	"go.uber.org/zap"
 )
 
-// BankHandler handles HTTP for banks.
 type BankHandler struct {
-	service *service.BankService
+	service service.BankService
 	log     *zap.Logger
 }
 
-// NewBankHandler returns a new BankHandler.
-func NewBankHandler(service *service.BankService, log *zap.Logger) *BankHandler {
+func NewBankHandler(service service.BankService, log *zap.Logger) *BankHandler {
 	return &BankHandler{
 		service: service,
 		log:     log,
 	}
 }
 
-// Handler for creating a bank (POST /banks).
+// Create creates a bank (POST /banks).
 func (h *BankHandler) Create(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		httputil.Error(w, http.StatusMethodNotAllowed, "method not allowed", "METHOD_NOT_ALLOWED", "")
@@ -53,7 +51,7 @@ func (h *BankHandler) Create(w http.ResponseWriter, r *http.Request) {
 	httputil.JSON(w, http.StatusCreated, bank)
 }
 
-// Handler for getting a bank by ID (GET /banks/:id).
+// GetByID gets a bank by ID (GET /banks/:id).
 func (h *BankHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		httputil.Error(w, http.StatusMethodNotAllowed, "method not allowed", "METHOD_NOT_ALLOWED", "")
@@ -81,7 +79,7 @@ func (h *BankHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	httputil.JSON(w, http.StatusOK, bank)
 }
 
-// Handler for listing banks with pagination
+// Lists banks with pagination (GET /banks).
 func (h *BankHandler) List(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		httputil.Error(w, http.StatusMethodNotAllowed, "method not allowed", "METHOD_NOT_ALLOWED", "")

@@ -20,7 +20,7 @@ import (
 
 type Server struct {
 	httpServer *http.Server
-	creditSvc  *service.CreditService
+	creditSvc  service.CreditService
 	log        *zap.Logger
 }
 
@@ -33,7 +33,6 @@ type Config struct {
 	Log          *zap.Logger
 }
 
-// Builds the server and wires dependencies
 func New(ctx context.Context, cfg *Config) (*Server, error) {
 	// Create the database pool
 	pool, err := postgres.NewPool(ctx, cfg.DBConnString)

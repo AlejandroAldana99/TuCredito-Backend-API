@@ -28,7 +28,7 @@ const (
 	workerPoolSize       = 10
 )
 
-type CreditService struct {
+type creditService struct {
 	creditRepo repository.CreditRepository
 	clientRepo repository.ClientRepository
 	bankRepo   repository.BankRepository
@@ -52,7 +52,6 @@ type creditResult struct {
 	err    error
 }
 
-// Creates a CreditService and starts the worker pool
 func NewCreditService(
 	creditRepo repository.CreditRepository,
 	clientRepo repository.ClientRepository,
@@ -61,8 +60,8 @@ func NewCreditService(
 	publisher event.Publisher,
 	engine decision.Engine,
 	log *zap.Logger,
-) *CreditService {
-	s := &CreditService{
+) CreditService {
+	s := &creditService{
 		creditRepo: creditRepo,
 		clientRepo: clientRepo,
 		bankRepo:   bankRepo,
@@ -80,8 +79,8 @@ func NewCreditService(
 	return s
 }
 
-// Processes credit creation jobs from the channel (concurrent processing)
-func (s *CreditService) worker(id int) {
+// worker processes credit creation jobs from the channel
+func (s *creditService) worker(id int) {
 	defer s.wg.Done()
 	for {
 		select {
@@ -94,8 +93,8 @@ func (s *CreditService) worker(id int) {
 	}
 }
 
-// Enqueues credit creation and returns the result
-func (s *CreditService) Create(ctx context.Context, input domain.CreateCreditInput) (*domain.Credit, error) {
+// Create enqueues credit creation and returns the result
+func (s *creditService) Create(ctx context.Context, input domain.CreateCreditInput) (*domain.Credit, error) {
 	if input.ClientID == "" || input.BankID == "" || input.MaxPayment < input.MinPayment || input.TermMonths <= 0 {
 		return nil, ErrInvalidInput
 	}
@@ -117,7 +116,7 @@ func (s *CreditService) Create(ctx context.Context, input domain.CreateCreditInp
 }
 
 // Runs validations, eligibility, persistence, cache, and events
-func (s *CreditService) createCredit(ctx context.Context, input domain.CreateCreditInput) (*domain.Credit, error) {
+func (s *creditService) createCredit(ctx context.Context, input domain.CreateCreditInput) (*domain.Credit, error) {
 	client, err := s.clientRepo.GetByID(ctx, input.ClientID)
 	if err != nil {
 		return nil, err
@@ -173,7 +172,8 @@ func (s *CreditService) createCredit(ctx context.Context, input domain.CreateCre
 	return credit, nil
 }
 
-func (s *CreditService) cacheCredit(ctx context.Context, c *domain.Credit) {
+// Caches a credit
+func (s *creditService) cacheCredit(ctx context.Context, c *domain.Credit) {
 	if s.cache == nil {
 		return
 	}
@@ -186,8 +186,8 @@ func (s *CreditService) cacheCredit(ctx context.Context, c *domain.Credit) {
 	}
 }
 
-// Returns a credit by ID, checking cache first
-func (s *CreditService) GetByID(ctx context.Context, id string) (*domain.Credit, error) {
+// Gets a credit by ID, checking cache first
+func (s *creditService) GetByID(ctx context.Context, id string) (*domain.Credit, error) {
 	if s.cache != nil {
 		if cacheWithJSON, ok := s.cache.(interface {
 			GetJSON(context.Context, string, interface{}) error
@@ -203,7 +203,7 @@ func (s *CreditService) GetByID(ctx context.Context, id string) (*domain.Credit,
 }
 
 // Updates credit status and emits domain events
-func (s *CreditService) UpdateStatus(ctx context.Context, id string, status domain.CreditStatus) (*domain.Credit, error) {
+func (s *creditService) UpdateStatus(ctx context.Context, id string, status domain.CreditStatus) (*domain.Credit, error) {
 	credit, err := s.creditRepo.UpdateStatus(ctx, id, status)
 	if err != nil {
 		return nil, err
@@ -229,23 +229,24 @@ func (s *CreditService) UpdateStatus(ctx context.Context, id string, status doma
 	return credit, nil
 }
 
-// List returns credits with pagination
-func (s *CreditService) List(ctx context.Context, limit, offset int) ([]*domain.Credit, error) {
+// Lists credits with pagination
+func (s *creditService) List(ctx context.Context, limit, offset int) ([]*domain.Credit, error) {
 	return s.creditRepo.List(ctx, limit, offset)
 }
 
-// Returns credits for a client
-func (s *CreditService) ListByClientID(ctx context.Context, clientID string, limit, offset int) ([]*domain.Credit, error) {
+// Lists credits for a client
+func (s *creditService) ListByClientID(ctx context.Context, clientID string, limit, offset int) ([]*domain.Credit, error) {
 	return s.creditRepo.ListByClientID(ctx, clientID, limit, offset)
 }
 
-// Stops the worker pool gracefully
-func (s *CreditService) Shutdown() {
+// Shuts down the worker pool gracefully
+func (s *creditService) Shutdown() {
 	close(s.done)
 	s.wg.Wait()
 }
 
-func (s *CreditService) emitCreditCreated(ctx context.Context, c *domain.Credit) error {
+// Emits a credit created event
+func (s *creditService) emitCreditCreated(ctx context.Context, c *domain.Credit) error {
 	payload := domain.CreditCreatedPayload{
 		CreditID:   c.ID,
 		ClientID:   c.ClientID,
@@ -270,7 +271,8 @@ func (s *CreditService) emitCreditCreated(ctx context.Context, c *domain.Credit)
 	return s.publisher.Publish(ctx, evt)
 }
 
-func (s *CreditService) emitCreditApproved(ctx context.Context, c *domain.Credit) error {
+// Emits a credit approved event
+func (s *creditService) emitCreditApproved(ctx context.Context, c *domain.Credit) error {
 	payload := domain.CreditApprovedPayload{
 		CreditID:   c.ID,
 		ClientID:   c.ClientID,
@@ -293,7 +295,8 @@ func (s *CreditService) emitCreditApproved(ctx context.Context, c *domain.Credit
 	return s.publisher.Publish(ctx, evt)
 }
 
-func (s *CreditService) emitCreditRejected(ctx context.Context, c *domain.Credit) error {
+// Emits a credit rejected event
+func (s *creditService) emitCreditRejected(ctx context.Context, c *domain.Credit) error {
 	payload := domain.CreditRejectedPayload{
 		CreditID:   c.ID,
 		ClientID:   c.ClientID,
@@ -316,8 +319,8 @@ func (s *CreditService) emitCreditRejected(ctx context.Context, c *domain.Credit
 	return s.publisher.Publish(ctx, evt)
 }
 
-// Creates a credit synchronously (no worker pool)
-func (s *CreditService) CreateSync(ctx context.Context, input domain.CreateCreditInput) (*domain.Credit, error) {
+// Creates a credit synchronously
+func (s *creditService) CreateSync(ctx context.Context, input domain.CreateCreditInput) (*domain.Credit, error) {
 	if input.ClientID == "" || input.BankID == "" || input.MaxPayment < input.MinPayment || input.TermMonths <= 0 {
 		return nil, ErrInvalidInput
 	}
@@ -325,8 +328,8 @@ func (s *CreditService) CreateSync(ctx context.Context, input domain.CreateCredi
 	return s.createCredit(ctx, input)
 }
 
-// Runs client/bank fetch and eligibility concurrently
-func (s *CreditService) ValidateEligibilityConcurrent(ctx context.Context, input domain.CreateCreditInput) (*decision.EligibilityResult, error) {
+// Validates eligibility concurrently
+func (s *creditService) ValidateEligibilityConcurrent(ctx context.Context, input domain.CreateCreditInput) (*decision.EligibilityResult, error) {
 	var client *domain.Client
 	var bank *domain.Bank
 	var clientErr, bankErr error

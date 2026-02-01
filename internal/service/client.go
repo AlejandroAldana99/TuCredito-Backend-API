@@ -7,32 +7,27 @@ import (
 	"github.com/tucredito/backend-api/internal/repository"
 )
 
-// ClientService handles client business logic.
-type ClientService struct {
+type clientService struct {
 	repository repository.ClientRepository
 }
 
-// NewClientService returns a new ClientService.
-func NewClientService(repository repository.ClientRepository) *ClientService {
-	return &ClientService{
+func NewClientService(repository repository.ClientRepository) ClientService {
+	return &clientService{
 		repository: repository,
 	}
 }
 
-// Create a new client.
-func (s *ClientService) Create(ctx context.Context, input domain.CreateClientInput) (*domain.Client, error) {
-	// Create the client using the repository
+// Create creates a new client
+func (s *clientService) Create(ctx context.Context, input domain.CreateClientInput) (*domain.Client, error) {
 	return s.repository.Create(ctx, input)
 }
 
-// Get a client by ID.
-func (s *ClientService) GetByID(ctx context.Context, id string) (*domain.Client, error) {
-	// Get the client by ID using the repository
+// GetByID gets a client by ID
+func (s *clientService) GetByID(ctx context.Context, id string) (*domain.Client, error) {
 	return s.repository.GetByID(ctx, id)
 }
 
-// List clients with pagination.
-func (s *ClientService) List(ctx context.Context, limit, offset int) ([]*domain.Client, error) {
-	// List the clients using the repository
+// Lists clients with pagination
+func (s *clientService) List(ctx context.Context, limit, offset int) ([]*domain.Client, error) {
 	return s.repository.List(ctx, limit, offset)
 }

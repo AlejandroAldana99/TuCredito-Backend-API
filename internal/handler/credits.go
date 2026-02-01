@@ -12,20 +12,18 @@ import (
 )
 
 type CreditHandler struct {
-	service *service.CreditService
+	service service.CreditService
 	log     *zap.Logger
 }
 
-// Creates a new CreditHandler
-func NewCreditHandler(service *service.CreditService, log *zap.Logger) *CreditHandler {
+func NewCreditHandler(service service.CreditService, log *zap.Logger) *CreditHandler {
 	return &CreditHandler{
 		service: service,
 		log:     log,
 	}
 }
 
-// Create creates a credit (POST /credits)
-// Uses worker pool for concurrent processing
+// Create creates a credit (POST /credits) - uses worker pool for concurrent processing
 func (h *CreditHandler) Create(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		httputil.Error(w, http.StatusMethodNotAllowed, "method not allowed", "METHOD_NOT_ALLOWED", "")
@@ -134,7 +132,7 @@ func (h *CreditHandler) UpdateStatus(w http.ResponseWriter, r *http.Request) {
 	httputil.JSON(w, http.StatusOK, credit)
 }
 
-// List returns credits with pagination
+// Lists credits with pagination (GET /credits).
 func (h *CreditHandler) List(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		httputil.Error(w, http.StatusMethodNotAllowed, "method not allowed", "METHOD_NOT_ALLOWED", "")
@@ -157,7 +155,7 @@ func (h *CreditHandler) List(w http.ResponseWriter, r *http.Request) {
 	httputil.JSON(w, http.StatusOK, list)
 }
 
-// Returns credits for a client (GET /clients/:id/credits)
+// Lists credits for a client (GET /clients/:id/credits).
 func (h *CreditHandler) ListByClientID(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		httputil.Error(w, http.StatusMethodNotAllowed, "method not allowed", "METHOD_NOT_ALLOWED", "")
