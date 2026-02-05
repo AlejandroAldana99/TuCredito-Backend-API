@@ -132,6 +132,7 @@ func New(ctx context.Context, cfg *Config) (*Server, error) {
 
 	return &Server{
 		httpServer: httpServer,
+		creditSvc:  creditSvc,
 		log:        cfg.Log,
 	}, nil
 }
